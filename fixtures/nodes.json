@@ -1,0 +1,42 @@
+[
+  {
+    "workflows": [],
+    "catalogs": [],
+    "autoDiscover": false,
+    "createdAt": "2016-01-06T19:16:49.063Z",
+    "identifiers": [
+      "c0:3f:d5:60:51:93"
+    ],
+    "name": "c0:3f:d5:60:51:93",
+    "sku": null,
+    "status": "available",
+    "status_reason": "Node has missing disks",
+    "type": "compute",
+    "updatedAt": "2016-01-06T20:38:17.772Z",
+    "id": "node1"
+  },
+  {
+    "workflows": [],
+    "catalogs": [],
+    "autoDiscover": false,
+    "createdAt": "2016-01-06T19:27:37.348Z",
+    "identifiers": [
+      "c0:3f:d5:60:51:60"
+    ],
+    "name": "c0:3f:d5:60:51:60",
+    "obmSettings": [
+      {
+        "service": "amt-obm-service",
+        "config": {
+          "host": "c0:3f:d5:60:51:60",
+          "password": "Password1+"
+        }
+      }
+    ],
+    "sku": null,
+    "status": "available",
+    "type": "compute",
+    "updatedAt": "2016-01-06T22:06:49.071Z",
+    "id": "node2"
+  }
+]
