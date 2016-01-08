@@ -20,21 +20,18 @@ end.parse!
 
 command = ARGV[0]
 
-puts command
-
 case command
   when 'delete'
-    target = ARGV.pop
+    target = ARGV[1]
     node = options[:node]
 
     puts "Deleting #{node}"
 
     puts RackHD::API.delete(target, node).body
-  # when 'nodes'
-  #   target = ARGV.pop
-  #   node = options[:node]
-  #
-  #   puts "Deleting #{node}"
-  #
-  #   puts RackHD::API.delete(target, node)
+  when 'nodes'
+    target = ARGV[1]
+
+    puts 'Nodes:'
+
+    puts RackHD::API.get_nodes(target)
 end

@@ -8,12 +8,12 @@ module RackHD
     def self.get_nodes(target)
       http = Net::HTTP.new("#{target}", PORT)
       request = Net::HTTP::Get.new("/api/common/nodes")
+
       JSON.parse(http.request(request).body)
     end
 
     def self.delete(target, node)
-
-      http = Net::HTTP.new("#{target}", PORT)
+      http = Net::HTTP.new(target, PORT)
       request = Net::HTTP::Delete.new("/api/common/nodes/#{node}")
 
       http.request(request)
@@ -40,7 +40,7 @@ module RackHD
 
       request = Net::HTTP::Get.new("/api/common/nodes/#{node}")
       response = http.request(request)
-      host = JSON.parse(response.body)["name"]
+      host = JSON.parse(response.body)['name']
 
       request = Net::HTTP::Patch.new("/api/common/nodes/#{node}")
       request.body = {
