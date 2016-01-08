@@ -5,13 +5,22 @@ require_relative '../rackhd/api'
 describe RackHD::API do
   subject { RackHD::API }
 
-  context 'with no target' do
-    it 'fails with an error' do
-      expect { subject.delete(nil, 'whatever') }.to raise_error 'Please specify a target.'
-    end
-  end
-
   context 'with a target' do
+    describe '.get_nodes' do
+      it 'returns the list of nodes' do
+        rackhd_server = 'my.server'
+
+        nodes_response = File.read('fixtures/nodes.json')
+
+        stub_request(:get, "http://#{rackhd_server}:8080/api/common/nodes")
+          .to_return(body: nodes_response)
+
+        nodes = subject.get_nodes(rackhd_server)
+
+        expect(nodes).to match_array(JSON.parse(nodes_response))
+      end
+    end
+
     describe '.delete' do
       it 'sends a DELETE request to just that node' do
         rackhd_server = 'my.server'
@@ -24,32 +33,33 @@ describe RackHD::API do
       end
     end
 
-    describe '.delete_all' do
-      it 'sends a DELETE request to all nodes' do
+    describe '.set_status' do
+      it 'sets the provided status' do
         rackhd_server = 'my.server'
-        nodes_response = File.read('fixtures/nodes.json')
+        node_id = 'node_id'
+        status = 'available'
+        stub = stub_request(:patch, "http://#{rackhd_server}:8080/api/common/nodes/#{node_id}")
+          .with(body: "{\"status\": \"#{status}\"}", headers: {'Content-Type' => 'application/json'})
 
-        stub_request(:get, "http://#{rackhd_server}:8080/api/common/nodes")
-          .to_return(body: nodes_response)
-        node_stub1 = stub_request(:delete, "http://#{rackhd_server}:8080/api/common/nodes/node1")
-        node_stub2 = stub_request(:delete, "http://#{rackhd_server}:8080/api/common/nodes/node2")
+        subject.set_status(rackhd_server, node_id, status)
 
-
-        subject.delete_all(rackhd_server)
-
-        expect(node_stub1).to have_been_requested
-        expect(node_stub2).to have_been_requested
+        expect(stub).to have_been_requested
       end
     end
 
-    describe '.make_available' do
-      it 'makes a node available' do
+    describe '.set_amt' do
+      it 'configures a node to use the amt obm service' do
         rackhd_server = 'my.server'
         node_id = 'node_id'
-        stub = stub_request(:patch, "http://#{rackhd_server}:8080/api/common/nodes/#{node_id}")
-                 .with(:body => '{"status":"available"}', :headers => {'Content-Type' => 'application/json'})
+        password = 'password'
 
-        subject.make_available(rackhd_server, node_id)
+        host = 'my_host'
+        stub_request(:get, "http://#{rackhd_server}:8080/api/common/nodes/#{node_id}")
+          .to_return(body: {name: host}.to_json)
+        stub = stub_request(:patch, "http://#{rackhd_server}:8080/api/common/nodes/#{node_id}")
+          .with(body: "{\"obmSettings\":[{\"service\":\"amt-obm-service\",\"config\":{\"host\":\"#{host}\",\"password\":\"#{password}\"}}]}")
+
+        subject.set_amt(rackhd_server, node_id, password)
 
         expect(stub).to have_been_requested
       end
