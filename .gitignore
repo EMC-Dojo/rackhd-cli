@@ -49,3 +49,6 @@ Temporary Items
 
 # unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
 .rvmrc
+
+# Secrets
+rackhd/node_names.yml

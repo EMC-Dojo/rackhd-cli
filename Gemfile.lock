@@ -18,6 +18,7 @@ GEM
       rspec-support (~> 3.0.0)
     rspec-support (3.0.4)
     safe_yaml (1.0.4)
+    table_print (1.5.4)
     webmock (1.21.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
@@ -27,6 +28,7 @@ PLATFORMS
 
 DEPENDENCIES
   rspec
+  table_print
   webmock
 
 BUNDLED WITH
