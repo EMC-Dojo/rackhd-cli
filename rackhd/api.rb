@@ -6,53 +6,54 @@ module RackHD
 
     PORT = 8080
 
-    def self.get_nodes(target)
-      http = Net::HTTP.new("#{target}", PORT)
+    def self.get_nodes(config)
+      raise 'Please specify a target.' unless config["target"]
+      http = Net::HTTP.new("#{config["target"]}", PORT)
       request = Net::HTTP::Get.new("/api/common/nodes")
 
       JSON.parse(http.request(request).body)
     end
 
-    def self.delete(target, node)
+    def self.delete(config)
 
-      http = Net::HTTP.new("#{target}", PORT)
-      request = Net::HTTP::Delete.new("/api/common/nodes/#{node}")
+      http = Net::HTTP.new("#{config["target"]}", PORT)
+      request = Net::HTTP::Delete.new("/api/common/nodes/#{config["node"]}")
 
       http.request(request)
     end
 
-    def self.set_status(target, node, status)
-      raise 'Please specify a target.' unless target
-      raise 'Please specify a node.' unless node
-      raise 'Please specify a status.' unless status
+    def self.set_status(config)
+      raise 'Please specify a target.' unless config["target"]
+      raise 'Please specify a node.' unless config["node"]
+      raise 'Please specify a status.' unless config["status"]
 
-      http = Net::HTTP.new("#{target}", PORT)
-      request = Net::HTTP::Patch.new("/api/common/nodes/#{node}")
-      request.body = { status: status }.to_json
+      http = Net::HTTP.new("#{config["target"]}", PORT)
+      request = Net::HTTP::Patch.new("/api/common/nodes/#{config["node"]}")
+      request.body = { status: config["status"] }.to_json
       request.set_content_type('application/json')
       http.request(request)
     end
 
-    def self.set_amt(target, node, password)
-      raise 'Please specify a target.' unless target
-      raise 'Please specify a node.' unless node
-      raise 'Please specify a password.' unless password
+    def self.set_amt(config)
+      raise 'Please specify a target.' unless config["target"]
+      raise 'Please specify a node.' unless config["node"]
+      raise 'Please specify a password.' unless config["password"]
 
-      http = Net::HTTP.new("#{target}", PORT)
+      http = Net::HTTP.new("#{config["target"]}", PORT)
 
-      request = Net::HTTP::Get.new("/api/common/nodes/#{node}")
+      request = Net::HTTP::Get.new("/api/common/nodes/#{config["node"]}")
 
       response = http.request(request)
 
       host = JSON.parse(response.body)["name"]
 
-      request = Net::HTTP::Patch.new("/api/common/nodes/#{node}")
+      request = Net::HTTP::Patch.new("/api/common/nodes/#{config["node"]}")
       request.body = {
         obmSettings: [{
             service: 'amt-obm-service',
             config: {
               host: host,
-              password: password
+              password: config["password"]
             }
           }]
       }.to_json

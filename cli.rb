@@ -19,8 +19,8 @@ OptionParser.new do |opts|
     end
   end
 
-  opts.on("-n", "--node node", "ID of node") do |id|
-    options["node"] = id
+  opts.on("-n", "--node node", "ID of node") do |node|
+    options["node"] = node
   end
 
   opts.on("-p", "--password password", "AMT password of the node") do |password|
@@ -38,23 +38,23 @@ OptionParser.new do |opts|
 end.parse!
 
 command = ARGV[0]
-config.merge(options)
+config.merge!(options)
 
 case command
   when 'delete'
     print "Deleting node #{config["node"]}..."
-    RackHD::API.delete(config["target"], config["node"])
+    RackHD::API.delete(config)
     puts "done"
 
   when 'set_status'
     print "Setting status on node #{config["node"]} to #{config["status"]}..."
-    RackHD::API.set_status(config["target"], config["node"], config["status"])
+    RackHD::API.set_status(config)
     puts "done"
 
   when 'get_nodes'
 
     puts "Nodes on target #{config["target"]}:\n\n"
-    nodes = RackHD::API.get_nodes(config["target"])
+    nodes = RackHD::API.get_nodes(config)
     node_names = config["node_names"]
     nodes.each do |node|
       node["cid"] = "n/a" unless node["cid"]
@@ -67,6 +67,6 @@ case command
 
   when 'set_amt'
     print "Configuring AMT for node #{config["node"]}..."
-    RackHD::API.set_amt(config["target"],config["node"],config["password"])
+    RackHD::API.set_amt(config)
     puts "done"
 end
