@@ -59,5 +59,20 @@ describe RackHD::API do
         expect(stub).to have_been_requested
       end
     end
+
+    describe '.get_active_workflow' do
+      it 'gets the active workflow of a node' do
+        config = {"target" => 'my.server', "node" => 'node_id'}
+
+        workflow_name = "Graph.Fake.Workflow.12345"
+
+        stub_request(:get, "http://#{config["target"]}:8080/api/common/nodes/node_id/workflows/active")
+          .to_return(body: { definition: { injectableName: workflow_name}}.to_json)
+
+        active_workflow = subject.get_active_workflow(config)
+
+        expect(active_workflow).to eq(workflow_name)
+      end
+    end
   end
 end

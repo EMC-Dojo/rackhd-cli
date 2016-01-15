@@ -52,7 +52,6 @@ case command
     puts "done"
 
   when 'get_nodes'
-
     puts "Nodes on target #{config["target"]}:\n\n"
     nodes = RackHD::API.get_nodes(config)
     node_names = config["node_names"]
@@ -61,9 +60,10 @@ case command
       node["status"] = "n/a" unless node["status"]
       mac_addr = node["name"]
       node["name"] = "#{mac_addr} (#{node_names[mac_addr]})" if node_names
+      node["active workflow"] = RackHD::API.get_active_workflow(config.merge({"node" => node["id"]}))
     end
 
-    tp nodes, "id", "name", "cid", "status"
+    tp nodes, "id", "name", "cid", "status", "active workflow"
 
   when 'set_amt'
     print "Configuring AMT for node #{config["node"]}..."
