@@ -51,4 +51,4 @@ Temporary Items
 .rvmrc
 
 # Secrets
-rackhd/node_names.yml
+rackhd/*.yml
