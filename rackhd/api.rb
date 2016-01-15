@@ -28,7 +28,7 @@ module RackHD
 
       http = Net::HTTP.new("#{target}", PORT)
       request = Net::HTTP::Patch.new("/api/common/nodes/#{node}")
-      request.body = "{\"status\": \"#{status}\"}"
+      request.body = { status: status }.to_json
       request.set_content_type('application/json')
       http.request(request)
     end

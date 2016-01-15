@@ -39,7 +39,7 @@ describe RackHD::API do
         node_id = 'node_id'
         status = 'available'
         stub = stub_request(:patch, "http://#{rackhd_server}:8080/api/common/nodes/#{node_id}")
-          .with(body: "{\"status\": \"#{status}\"}", headers: {'Content-Type' => 'application/json'})
+          .with(body: { status: status }.to_json, headers: {'Content-Type' => 'application/json'})
 
         subject.set_status(rackhd_server, node_id, status)
 
