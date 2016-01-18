@@ -65,7 +65,11 @@ case command
       node["status"] = "n/a" unless node["status"]
       mac_addr = node["name"]
       node["name"] = "#{mac_addr} (#{node_names[mac_addr]})" if node_names
-      node['disk cid'] = 'n/a' unless node['persistent_disk'] && node['persistent_disk']['disk_cid']
+      if node['persistent_disk'] && node['persistent_disk']['disk_cid']
+        node['disk cid'] = node['persistent_disk']['disk_cid']
+      else
+        node['disk cid'] = 'n/a'
+      end
       node["active workflow"] = RackHD::API.get_active_workflow(config.merge({"node" => node["id"]}))
 
     end
