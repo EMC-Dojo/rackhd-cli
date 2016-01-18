@@ -60,6 +60,24 @@ describe RackHD::API do
       end
     end
 
+    describe '.delete_orphan_disks' do
+      it 'remove disk setting from node without cid' do
+        config = {"target" => 'my.server', "node" => 'node_id', "password" => 'password'}
+
+        # host = 'my_host'
+        nodes_response = File.read('fixtures/nodes.json')
+        stub_request(:get, "http://#{config["target"]}:8080/api/common/nodes")
+          .to_return(body: nodes_response)
+
+        stub = stub_request(:patch, "http://#{config['target']}:8080/api/common/nodes/node3")
+                 .with(body: "{\"persistent_disk\":{}}")
+
+        subject.delete_orphan_disks(config)
+
+        expect(stub).to have_been_requested
+      end
+    end
+
     describe '.get_active_workflow' do
       it 'gets the active workflow of a node' do
         config = {"target" => 'my.server', "node" => 'node_id'}

@@ -46,6 +46,11 @@ case command
     RackHD::API.delete(config)
     puts "done"
 
+  when 'delete_orphan_disks'
+    print "Deleting orphan disks for all nodes..."
+    RackHD::API.delete_orphan_disks(config)
+    puts 'done'
+
   when 'set_status'
     print "Setting status on node #{config["node"]} to #{config["status"]}..."
     RackHD::API.set_status(config)

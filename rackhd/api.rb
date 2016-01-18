@@ -59,6 +59,27 @@ module RackHD
       http.request(request)
     end
 
+    def self.delete_orphan_disks(config)
+      raise 'Please specify a target.' unless config["target"]
+
+      http = Net::HTTP.new("#{config["target"]}", PORT)
+      request = Net::HTTP::Get.new("/api/common/nodes")
+      nodes = JSON.parse(http.request(request).body)
+
+      nodes.each do |node|
+        if node['cid'] == nil || node['cid'] == ''
+          if node['persistent_disk'] != nil && node['persistent_disk']['disk_cid'] != nil
+            request = Net::HTTP::Patch.new("/api/common/nodes/#{node['id']}")
+            request.body = {
+              persistent_disk: {}
+            }.to_json
+            request.set_content_type('application/json')
+            http.request(request)
+          end
+        end
+      end
+    end
+
     def self.get_active_workflow(config)
       raise 'Please specify a target.' unless config["target"]
       raise 'Please specify a node.' unless config["node"]
