@@ -65,10 +65,12 @@ case command
       node["status"] = "n/a" unless node["status"]
       mac_addr = node["name"]
       node["name"] = "#{mac_addr} (#{node_names[mac_addr]})" if node_names
+      node['disk cid'] = 'n/a' unless node['persistent_disk'] && node['persistent_disk']['disk_cid']
       node["active workflow"] = RackHD::API.get_active_workflow(config.merge({"node" => node["id"]}))
+
     end
 
-    tp nodes, "id", "name", "cid", "status", "active workflow"
+    tp nodes, "id", "name", "cid", "status", 'disk cid', 'active workflow'
 
   when 'set_amt'
     print "Configuring AMT for node #{config["node"]}..."
