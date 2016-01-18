@@ -60,11 +60,8 @@ module RackHD
     end
 
     def self.delete_orphan_disks(config)
-      raise 'Please specify a target.' unless config["target"]
-
       http = Net::HTTP.new("#{config["target"]}", PORT)
-      request = Net::HTTP::Get.new("/api/common/nodes")
-      nodes = JSON.parse(http.request(request).body)
+      nodes = get_nodes(config)
 
       nodes.each do |node|
         if node['cid'] == nil || node['cid'] == ''
