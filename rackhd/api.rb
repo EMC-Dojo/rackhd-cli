@@ -1,4 +1,5 @@
 require 'json'
+require 'net/http'
 require 'yaml'
 
 module RackHD
