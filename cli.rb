@@ -56,6 +56,11 @@ case command
     RackHD::API.set_status(config)
     puts "done"
 
+  when 'deprovision_node'
+    print "Deprovisioning node #{config["node"]}...\n"
+    RackHD::API.deprovision_node(config)
+    puts 'done'
+
   when 'get_nodes'
     puts "Nodes on target #{config["target"]}:\n\n"
     nodes = RackHD::API.get_nodes(config)

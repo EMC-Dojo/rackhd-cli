@@ -92,5 +92,41 @@ module RackHD
         return JSON.parse(http.request(request).body)["definition"]["injectableName"]
       end
     end
+
+    def self.deprovision_node(config)
+      raise 'Please specify a target.' unless config["target"]
+      raise 'Please specify a node.' unless config["node"]
+
+      http = Net::HTTP.new("#{config["target"]}", PORT)
+      request = Net::HTTP::Get.new("/api/common/workflows/library")
+      response = http.request(request)
+
+      case response
+        when Net::HTTPNoContent
+          return "n/a"
+        when Net::HTTPOK
+          workflows = JSON.parse(http.request(request).body)
+          workflows.each do |workflow|
+            if workflow["injectableName"].include? 'DeprovisionNode'
+              puts "Found workflow #{workflow["injectableName"]}"
+
+              request = Net::HTTP::Post.new("/api/common/nodes/#{config["node"]}/workflows")
+              request.body = {name: workflow["injectableName"], options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+              request.set_content_type('application/json')
+
+              resp = http.request(request)
+              case resp
+                when Net::HTTPCreated
+                  puts 'Successfully kicked off deprovision workflow.'
+                else
+                  puts 'Failed to kickoff deprovision workflow.'
+              end
+              return
+            end
+          end
+
+          puts "No deprovision workflow found on RackHD server."
+      end
+    end
   end
 end
