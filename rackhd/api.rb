@@ -30,7 +30,7 @@ module RackHD
 
       http = Net::HTTP.new("#{config["target"]}", PORT)
       request = Net::HTTP::Patch.new("/api/common/nodes/#{config["node"]}")
-      request.body = { status: config["status"] }.to_json
+      request.body = {status: config["status"]}.to_json
       request.set_content_type('application/json')
       http.request(request)
     end
@@ -48,12 +48,12 @@ module RackHD
       request = Net::HTTP::Patch.new("/api/common/nodes/#{config["node"]}")
       request.body = {
         obmSettings: [{
-            service: 'amt-obm-service',
-            config: {
-              host: host,
-              password: config["password"]
-            }
-          }]
+                        service: 'amt-obm-service',
+                        config: {
+                          host: host,
+                          password: config["password"]
+                        }
+                      }]
       }.to_json
       request.set_content_type('application/json')
       http.request(request)
@@ -86,10 +86,12 @@ module RackHD
       response = http.request(request)
 
       case response
-      when Net::HTTPNoContent
-        return "n/a"
-      when Net::HTTPOK
-        return JSON.parse(http.request(request).body)["definition"]["injectableName"]
+        when Net::HTTPNoContent
+          return 'n/a'
+        when Net::HTTPOK
+          return JSON.parse(response.body)["definition"]["injectableName"]
+        else
+          return 'n/a'
       end
     end
 
