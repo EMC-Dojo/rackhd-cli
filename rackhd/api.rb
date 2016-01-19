@@ -110,7 +110,7 @@ module RackHD
           workflows = JSON.parse(http.request(request).body)
           workflows.each do |workflow|
             if workflow["injectableName"].include? 'DeprovisionNode'
-              puts "Found workflow #{workflow["injectableName"]}"
+              # puts "Found workflow #{workflow["injectableName"]}"
 
               request = Net::HTTP::Post.new("/api/common/nodes/#{config["node"]}/workflows")
               request.body = {name: workflow["injectableName"], options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
@@ -119,15 +119,14 @@ module RackHD
               resp = http.request(request)
               case resp
                 when Net::HTTPCreated
-                  puts 'Successfully kicked off deprovision workflow.'
+                  return 'Successfully kicked off deprovision workflow.'
                 else
-                  puts 'Failed to kickoff deprovision workflow.'
+                  return 'Failed to kickoff deprovision workflow.'
               end
-              return
             end
           end
 
-          puts "No deprovision workflow found on RackHD server."
+          return 'No deprovision workflow found on RackHD server.'
       end
     end
   end

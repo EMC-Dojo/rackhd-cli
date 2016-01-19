@@ -92,5 +92,27 @@ describe RackHD::API do
         expect(active_workflow).to eq(workflow_name)
       end
     end
+
+    describe '.deprovision_node' do
+      it 'deprovision node' do
+        config = {"target" => 'my.server', "node" => 'node_id'}
+
+        workflow1 = 'Graph.BOSH.DeprovisionNode.815b3847-53a9-4fba-a9d6-694abb96ecc7'
+        workflow2 = 'Graph.BOSH.DeprovisionNode.815b3847-53a9-4fba-a9d6-694abb96ecc8'
+
+        stub_request(:get, "http://#{config["target"]}:8080/api/common/workflows/library")
+          .to_return(body: [{injectableName: workflow1},
+              {injectableName: workflow2}].to_json)
+
+        expectedBody = {name: workflow1, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+
+        stub = stub_request(:post, "http://#{config['target']}:8080/api/common/nodes/#{config['node']}/workflows")
+                 .with(body: expectedBody).to_return(status: 201)
+
+        subject.deprovision_node(config)
+
+        expect(stub).to have_been_requested
+      end
+    end
   end
 end

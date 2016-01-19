@@ -30,8 +30,8 @@ COMMANDS = {
     help: '',
     block: -> {
       print "Deprovisioning node #{config["node"]}...\n"
-      RackHD::API.deprovision_node(config)
-      puts 'done'
+      result = RackHD::API.deprovision_node(config)
+      puts result
     }
   },
   set_status: {
