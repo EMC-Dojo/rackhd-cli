@@ -96,6 +96,25 @@ module RackHD
       end
     end
 
+    def self.restart_node(config)
+      raise 'Please specify a target.' unless config["target"]
+      raise 'Please specify a node.' unless config["node"]
+
+      http = Net::HTTP.new("#{config["target"]}", PORT)
+
+      request = Net::HTTP::Post.new("/api/common/nodes/#{config["node"]}/workflows")
+      request.body = {name: 'Graph.Reboot.Node', options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+      request.set_content_type('application/json')
+
+      resp = http.request(request)
+      case resp
+        when Net::HTTPCreated
+          return 'Successfully kicked off reboot workflow.'
+        else
+          return 'Failed to kick off reboot workflow.'
+      end
+    end
+
     def self.deprovision_node(config)
       raise 'Please specify a target.' unless config["target"]
       raise 'Please specify a node.' unless config["node"]
@@ -122,7 +141,7 @@ module RackHD
                 when Net::HTTPCreated
                   return 'Successfully kicked off deprovision workflow.'
                 else
-                  return 'Failed to kickoff deprovision workflow.'
+                  return 'Failed to kick off deprovision workflow.'
               end
             end
           end

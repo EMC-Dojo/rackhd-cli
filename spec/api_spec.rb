@@ -114,5 +114,22 @@ describe RackHD::API do
         expect(stub).to have_been_requested
       end
     end
+
+    describe '.restart_node' do
+      it 'posts a reboot workflow to the specified node' do
+        config = {"target" => 'my.server', "node" => 'node_id'}
+
+        workflow = 'Graph.Reboot.Node'
+
+        expectedBody = {name: workflow, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+
+        stub = stub_request(:post, "http://#{config['target']}:8080/api/common/nodes/#{config['node']}/workflows")
+                 .with(body: expectedBody).to_return(status: 201)
+
+        subject.restart_node(config)
+
+        expect(stub).to have_been_requested
+      end
+    end
   end
 end

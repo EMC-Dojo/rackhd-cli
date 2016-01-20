@@ -6,7 +6,7 @@ require_relative 'rackhd/api'
 
 class RackHDCLI < Thor
   class_option :"config-file", :aliases => "-c", :desc => "Configuration file"
-  class_option :target, :aliases => "-t", :desc => "RackHD Server IP Address"
+  class_option :target, :aliases => "-t", :desc => "RackHD server IP address"
 
   option :node, :aliases => "-n", :desc => "Node to delete"
   desc "delete", "Delete a node from the database"
@@ -80,6 +80,25 @@ class RackHDCLI < Thor
     print "Configuring AMT for node #{config['node']}..."
     RackHD::API.set_amt(config)
     puts 'done'
+  end
+
+  option :node, :aliases => "-n", :desc => "Node to reboot"
+  desc "reboot", "Reboot node"
+  def reboot
+    config = Helpers.load_config(options)
+
+    print "Rebooting node #{config['node']}..."
+    RackHD::API.restart_node(config)
+    puts 'done'
+  end
+
+  option :node, :aliases => "-n", :desc => "Node to rediscover"
+  desc "rediscover", "Rediscover node"
+  def rediscover
+    reboot
+    sleep 5
+    delete
+    puts "Warning: rediscovered node is missing OBM settings"
   end
 end
 
