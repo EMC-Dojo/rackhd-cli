@@ -88,11 +88,11 @@ module RackHD
 
       case response
         when Net::HTTPNoContent
-          return 'n/a'
+          'n/a'
         when Net::HTTPOK
-          return JSON.parse(response.body)["definition"]["injectableName"]
+          JSON.parse(response.body)["definition"]["injectableName"]
         else
-          return 'n/a'
+          'n/a'
       end
     end
 
@@ -130,8 +130,6 @@ module RackHD
           workflows = JSON.parse(http.request(request).body)
           workflows.each do |workflow|
             if workflow["injectableName"].include? 'DeprovisionNode'
-              # puts "Found workflow #{workflow["injectableName"]}"
-
               request = Net::HTTP::Post.new("/api/common/nodes/#{config["node"]}/workflows")
               request.body = {name: workflow["injectableName"], options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
               request.set_content_type('application/json')

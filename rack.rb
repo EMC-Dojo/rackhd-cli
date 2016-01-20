@@ -3,6 +3,7 @@ require 'thor'
 require 'yaml'
 
 require_relative 'rackhd/api'
+require_relative 'rackhd/config'
 
 class RackHDCLI < Thor
   class_option :"config-file", :aliases => "-c", :desc => "Configuration file"
@@ -11,7 +12,7 @@ class RackHDCLI < Thor
   option :node, :aliases => "-n", :desc => "Node to delete"
   desc "delete", "Delete a node from the database"
   def delete
-    config = Helpers.load_config(options)
+    config = RackHD::Config.load_config(options)
 
     print "Deleting node #{options['node']}..."
     RackHD::API.delete(config)
@@ -20,7 +21,7 @@ class RackHDCLI < Thor
 
   desc "get_nodes", "Print a table with information about all nodes"
   def get_nodes
-    config = Helpers.load_config(options)
+    config = RackHD::Config.load_config(options)
 
     puts "Nodes on target #{config['target']}:\n\n"
     nodes = RackHD::API.get_nodes(config)
@@ -43,7 +44,7 @@ class RackHDCLI < Thor
 
   desc "delete_orphan_disks", "Delete all orphan disks"
   def delete_orphan_disks
-    config = Helpers.load_config(options)
+    config = RackHD::Config.load_config(options)
 
     print 'Deleting orphan disks for all nodes...'
     RackHD::API.delete_orphan_disks(config)
@@ -53,7 +54,7 @@ class RackHDCLI < Thor
   option :node, :aliases => "-n", :desc => "Node to deprovision"
   desc "deprovision_node", "Run DeprovisionNode workflow on specified node"
   def deprovision_node
-    config = Helpers.load_config(options)
+    config = RackHD::Config.load_config(options)
 
     print "Deprovisioning node #{config["node"]}...\n"
     result = RackHD::API.deprovision_node(config)
@@ -64,7 +65,7 @@ class RackHDCLI < Thor
   option :node, :aliases => "-n", :desc => "Node to update"
   desc "set_status", "Set status on node to specified status"
   def set_status
-    config = Helpers.load_config(options)
+    config = RackHD::Config.load_config(options)
 
     print "Setting status on node #{config['node']} to #{config['status']}..."
     RackHD::API.set_status(config)
@@ -75,7 +76,7 @@ class RackHDCLI < Thor
   option :password, :aliases => "-p", :desc => "AMT password"
   desc "set_amt", "Configure node to use AMT OBM service"
   def set_amt
-    config = Helpers.load_config(options)
+    config = RackHD::Config.load_config(options)
 
     print "Configuring AMT for node #{config['node']}..."
     RackHD::API.set_amt(config)
@@ -85,7 +86,7 @@ class RackHDCLI < Thor
   option :node, :aliases => "-n", :desc => "Node to reboot"
   desc "reboot", "Reboot node"
   def reboot
-    config = Helpers.load_config(options)
+    config = RackHD::Config.load_config(options)
 
     print "Rebooting node #{config['node']}..."
     RackHD::API.restart_node(config)
@@ -99,15 +100,5 @@ class RackHDCLI < Thor
     sleep 5
     delete
     puts "Warning: rediscovered node is missing OBM settings"
-  end
-end
-
-class Helpers
-  def self.load_config(options)
-    config = {}
-    if options[:"config-file"] && File.exists?(options[:"config-file"])
-      config = YAML.load_file(options[:"config-file"])
-    end
-    return config.merge(options)
   end
 end

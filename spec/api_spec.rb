@@ -104,10 +104,10 @@ describe RackHD::API do
           .to_return(body: [{injectableName: workflow1},
               {injectableName: workflow2}].to_json)
 
-        expectedBody = {name: workflow1, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+        expected_body = {name: workflow1, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
 
         stub = stub_request(:post, "http://#{config['target']}:8080/api/common/nodes/#{config['node']}/workflows")
-                 .with(body: expectedBody).to_return(status: 201)
+                 .with(body: expected_body).to_return(status: 201)
 
         subject.deprovision_node(config)
 
