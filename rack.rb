@@ -6,7 +6,6 @@ require_relative 'rackhd/api'
 require_relative 'rackhd/config'
 
 class RackHDCLI < Thor
-  class_option :"config-file", :aliases => "-c", :desc => "Configuration file"
   class_option :target, :aliases => "-t", :desc => "RackHD server IP address"
 
   option :node, :aliases => "-n", :desc => "Node to delete"
