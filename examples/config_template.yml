@@ -1,8 +1,9 @@
 # SAMPLE RACKHD CLI CONFIGURATION FILE
-#---
-#node_names:
-#  "node1:mac:addr": "node1 alias"
-#  "node2:mac:addr": "node2 alias"
-#password: "password"
-#target: "192.168.0.123"
-#use_alias: true
+
+---
+node_names:
+  "node1:mac:addr": "node1 alias"
+  "node2:mac:addr": "node2 alias"
+password: "password"
+target: "192.168.0.123"
+use_alias: true

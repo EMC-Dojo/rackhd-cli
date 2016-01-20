@@ -10,8 +10,10 @@ module RackHD
         puts "Using configuration file at #{expanded_path}"
         config = YAML.load_file(expanded_path)
       else
-        puts "Creating empty configuration file at #{expanded_path}"
-        FileUtils.cp 'examples/config_template.yml', expanded_path
+        puts 'ERROR: No configuration file found.'
+        puts "Please create configuration file at #{expanded_path}"
+        puts 'See examples/config_template.yml for an example'
+        exit(1)
       end
       config.merge(options)
     end
