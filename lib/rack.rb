@@ -2,8 +2,8 @@ require 'table_print'
 require 'thor'
 require 'yaml'
 
-require_relative 'rackhd/api'
-require_relative 'rackhd/config'
+require 'rackhd/api'
+require 'rackhd/config'
 
 class RackHDCLI < Thor
   class_option :target, :aliases => "-t", :desc => "RackHD server IP address"
