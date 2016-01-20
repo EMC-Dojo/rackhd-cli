@@ -1,6 +1,6 @@
 require 'rspec'
 require 'webmock/rspec'
-require_relative '../rackhd/api'
+require_relative '../lib/rackhd/api'
 
 describe RackHD::API do
   subject { RackHD::API }

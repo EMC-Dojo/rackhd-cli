@@ -9,7 +9,7 @@
 
 # Uninstallation
 
-Run `gem uninstall rackhd`
+Run `gem uninstall rackhd-cli`
 
 # Tests
 
