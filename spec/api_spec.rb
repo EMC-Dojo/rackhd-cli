@@ -131,5 +131,45 @@ describe RackHD::API do
         expect(stub).to have_been_requested
       end
     end
+
+    describe '.clean_files' do
+      it 'deletes files uploaded to the server' do
+        config = {"target" => 'my.server'}
+
+        resp1 = [{
+           "basename": "08191c9b-f127-427a-43af-0fe18fc4c4b8",
+           "filename": "08191c9b-f127-427a-43af-0fe18fc4c4b8_78e53b30-98dc-4daf-89fb-fe34e1d10cb7",
+           "uuid": "78e53b30-98dc-4daf-89fb-fe34e1d10cb7",
+           "md5": "836abba7b4232e3bc505ed74b807bb08",
+           "sha256": "7723b6443f29a9ef5f94fc6bebc670636a4d0617044204bc70228ed37417dc49",
+           "version": 0
+         },
+         {
+           "basename": "34c57fae-bbaa-4ca0-4761-e64e480d3e13",
+           "filename": "34c57fae-bbaa-4ca0-4761-e64e480d3e13_8d8792d5-e1ab-419d-9aff-c49c2a29624a",
+           "uuid": "8d8792d5-e1ab-419d-9aff-c49c2a29624a",
+           "md5": "936fd42de220997e4b94d3439b7f1501",
+           "sha256": "b7eea8206be6f58e2705b1acb93f87bfd81c91b126e5b0fb128422178ef3ccaa",
+           "version": 0
+         }].to_json
+
+        resp2 = [].to_json
+
+        stub_request(:get, "http://#{config['target']}:8080/api/common/files/list/all")
+          .to_return({ body: resp1 }, { body: resp2 })
+
+        stub1 = stub_request(:delete, "http://#{config['target']}:8080/api/common/files/78e53b30-98dc-4daf-89fb-fe34e1d10cb7")
+                 .to_return(status: 204)
+        stub2 = stub_request(:delete, "http://#{config['target']}:8080/api/common/files/8d8792d5-e1ab-419d-9aff-c49c2a29624a")
+                 .to_return(status: 204)
+
+        deleted_files = subject.clean_files(config)
+
+        expect(stub1).to have_been_requested
+        expect(stub2).to have_been_requested
+
+        expect(deleted_files.length).to eq(2)
+      end
+    end
   end
 end

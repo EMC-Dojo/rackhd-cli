@@ -147,5 +147,29 @@ module RackHD
           return 'No deprovision workflow found on RackHD server.'
       end
     end
+
+    def self.clean_files(config)
+      raise 'Please specify a target.' unless config["target"]
+
+      http = Net::HTTP.new("#{config["target"]}", PORT)
+      request = Net::HTTP::Get.new("/api/common/files/list/all")
+      response = http.request(request)
+
+      files = JSON.parse(response.body)
+      files.each do |file|
+        request = Net::HTTP::Delete.new("/api/common/files/#{file["uuid"]}")
+        response = http.request(request)
+        raise("Error deleting file: #{file["uuid"]}") unless response.kind_of? Net::HTTPNoContent
+      end
+
+      request = Net::HTTP::Get.new("/api/common/files/list/all")
+      response = http.request(request)
+
+      if JSON.parse(response.body).length != 0
+        raise("ERROR: Failed to delete all files")
+      end
+
+      return files
+    end
   end
 end
