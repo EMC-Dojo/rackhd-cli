@@ -163,7 +163,7 @@ module RackHD
         raise("ERROR: Failed to delete all files")
       end
 
-      return files
+      files
     end
   end
 end

@@ -93,7 +93,6 @@ class RackHDCLI < Thor
     puts "Warning: rediscovered node is missing OBM settings"
   end
 
-  option :node, :aliases => "-n", :desc => "Node to rediscover"
   desc "clean", "Delete all files uploaded to RackHD Server"
   def clean
     config = RackHD::Config.load_config(options)
