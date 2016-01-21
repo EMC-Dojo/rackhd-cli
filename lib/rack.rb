@@ -8,18 +8,17 @@ require 'rackhd/config'
 class RackHDCLI < Thor
   class_option :target, :aliases => "-t", :desc => "RackHD server IP address"
 
-  option :node, :aliases => "-n", :desc => "Node to delete"
-  desc "delete", "Delete a node from the database"
-  def delete
+  desc "delete NODE", "Delete NODE from the database"
+  def delete(node)
     config = RackHD::Config.load_config(options)
 
-    print "Deleting node #{options['node']}..."
-    RackHD::API.delete(config)
+    print "Deleting node #{node}..."
+    RackHD::API.delete(config, node)
     puts 'done'
   end
 
-  desc "get_nodes", "Print a table with information about all nodes"
-  def get_nodes
+  desc "nodes", "Print a table with information about all nodes"
+  def nodes
     config = RackHD::Config.load_config(options)
 
     puts "Nodes on target #{config['target']}:\n\n"
@@ -35,13 +34,13 @@ class RackHDCLI < Thor
       else
         node['disk cid'] = 'n/a'
       end
-      node['active workflow'] = RackHD::API.get_active_workflow(config.merge({'node' => node['id']}))
+      node['active workflow'] = RackHD::API.get_active_workflow(config, node['cid'])
     end
 
     tp nodes, 'id', 'name', 'cid', 'status', 'disk cid', 'active workflow'
   end
 
-  desc "delete_orphan_disks", "Delete all orphan disks"
+  desc "delete-orphan-disks", "Delete all orphan disks"
   def delete_orphan_disks
     config = RackHD::Config.load_config(options)
 
@@ -50,54 +49,47 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
-  option :node, :aliases => "-n", :desc => "Node to deprovision"
-  desc "deprovision_node", "Run DeprovisionNode workflow on specified node"
-  def deprovision_node
+  desc "deprovision NODE", "Run deprovision workflow on NODE"
+  def deprovision(node)
     config = RackHD::Config.load_config(options)
 
-    print "Deprovisioning node #{config["node"]}...\n"
-    result = RackHD::API.deprovision_node(config)
-    puts result
+    print "Deprovisioning node #{node}...\n"
+    RackHD::API.deprovision_node(config, node)
   end
 
-  option :status, :aliases => "-s", :desc => "Status string (e.g. available, reserved, blocked)"
-  option :node, :aliases => "-n", :desc => "Node to update"
-  desc "set_status", "Set status on node to specified status"
-  def set_status
+  desc "status NODE STATUS", "Set status on NODE to STATUS"
+  def status(node, status)
     config = RackHD::Config.load_config(options)
 
-    print "Setting status on node #{config['node']} to #{config['status']}..."
-    RackHD::API.set_status(config)
+    print "Setting status on node #{node} to #{status}..."
+    RackHD::API.set_status(config, node, status)
     puts 'done'
   end
 
-  option :node, :aliases => "-n", :desc => "Node to update"
   option :password, :aliases => "-p", :desc => "AMT password"
-  desc "set_amt", "Configure node to use AMT OBM service"
-  def set_amt
+  desc "amt NODE", "Configure NODE to use AMT OBM service"
+  def amt(node)
     config = RackHD::Config.load_config(options)
 
-    print "Configuring AMT for node #{config['node']}..."
-    RackHD::API.set_amt(config)
+    print "Configuring AMT for node #{node}..."
+    RackHD::API.set_amt(config, node)
     puts 'done'
   end
 
-  option :node, :aliases => "-n", :desc => "Node to reboot"
-  desc "reboot", "Reboot node"
-  def reboot
+  desc "reboot NODE", "Reboot NODE"
+  def reboot(node)
     config = RackHD::Config.load_config(options)
 
-    print "Rebooting node #{config['node']}..."
-    RackHD::API.restart_node(config)
+    print "Rebooting node #{node}..."
+    RackHD::API.restart_node(config, node)
     puts 'done'
   end
 
-  option :node, :aliases => "-n", :desc => "Node to rediscover"
-  desc "rediscover", "Rediscover node"
-  def rediscover
-    reboot
+  desc "rediscover NODE", "Rediscover node"
+  def rediscover(node)
+    reboot(node)
     sleep 5
-    delete
+    delete(node)
     puts "Warning: rediscovered node is missing OBM settings"
   end
 

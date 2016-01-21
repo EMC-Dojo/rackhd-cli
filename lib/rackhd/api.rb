@@ -15,46 +15,42 @@ module RackHD
       JSON.parse(http.request(request).body)
     end
 
-    def self.delete(config)
+    def self.delete(config, node_id)
       raise 'Please specify a target.' unless config["target"]
-      raise 'Please specify a node.' unless config["node"]
 
       http = Net::HTTP.new("#{config["target"]}", PORT)
-      request = Net::HTTP::Delete.new("/api/common/nodes/#{config["node"]}")
+      request = Net::HTTP::Delete.new("/api/common/nodes/#{node_id}")
       http.request(request)
     end
 
-    def self.set_status(config)
+    def self.set_status(config, node_id, status)
       raise 'Please specify a target.' unless config["target"]
-      raise 'Please specify a node.' unless config["node"]
-      raise 'Please specify a status.' unless config["status"]
 
       http = Net::HTTP.new("#{config["target"]}", PORT)
-      request = Net::HTTP::Patch.new("/api/common/nodes/#{config["node"]}")
-      request.body = {status: config["status"]}.to_json
+      request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
+      request.body = {status: status}.to_json
       request.set_content_type('application/json')
       http.request(request)
     end
 
-    def self.set_amt(config)
+    def self.set_amt(config, node_id)
       raise 'Please specify a target.' unless config["target"]
-      raise 'Please specify a node.' unless config["node"]
       raise 'Please specify a password.' unless config["password"]
 
       http = Net::HTTP.new("#{config["target"]}", PORT)
-      request = Net::HTTP::Get.new("/api/common/nodes/#{config["node"]}")
+      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}")
       response = http.request(request)
 
       host = JSON.parse(response.body)["name"]
-      request = Net::HTTP::Patch.new("/api/common/nodes/#{config["node"]}")
+      request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
       request.body = {
         obmSettings: [{
-                        service: 'amt-obm-service',
-                        config: {
-                          host: host,
-                          password: config["password"]
-                        }
-                      }]
+            service: 'amt-obm-service',
+            config: {
+              host: host,
+              password: config["password"]
+            }
+          }]
       }.to_json
       request.set_content_type('application/json')
       http.request(request)
@@ -78,12 +74,11 @@ module RackHD
       end
     end
 
-    def self.get_active_workflow(config)
+    def self.get_active_workflow(config, node_id)
       raise 'Please specify a target.' unless config["target"]
-      raise 'Please specify a node.' unless config["node"]
 
       http = Net::HTTP.new("#{config["target"]}", PORT)
-      request = Net::HTTP::Get.new("/api/common/nodes/#{config["node"]}/workflows/active")
+      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}/workflows/active")
       response = http.request(request)
 
       case response
@@ -96,28 +91,26 @@ module RackHD
       end
     end
 
-    def self.restart_node(config)
+    def self.restart_node(config, node_id)
       raise 'Please specify a target.' unless config["target"]
-      raise 'Please specify a node.' unless config["node"]
 
       http = Net::HTTP.new("#{config["target"]}", PORT)
 
-      request = Net::HTTP::Post.new("/api/common/nodes/#{config["node"]}/workflows")
+      request = Net::HTTP::Post.new("/api/common/nodes/#{node_id}/workflows")
       request.body = {name: 'Graph.Reboot.Node', options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
       request.set_content_type('application/json')
 
       resp = http.request(request)
       case resp
         when Net::HTTPCreated
-          return 'Successfully kicked off reboot workflow.'
+          puts 'Successfully kicked off reboot workflow.'
         else
-          return 'Failed to kick off reboot workflow.'
+          puts 'Failed to kick off reboot workflow.'
       end
     end
 
-    def self.deprovision_node(config)
+    def self.deprovision_node(config, node_id)
       raise 'Please specify a target.' unless config["target"]
-      raise 'Please specify a node.' unless config["node"]
 
       http = Net::HTTP.new("#{config["target"]}", PORT)
       request = Net::HTTP::Get.new("/api/common/workflows/library")
@@ -125,26 +118,27 @@ module RackHD
 
       case response
         when Net::HTTPNoContent
-          return "n/a"
+          puts 'No content'
         when Net::HTTPOK
           workflows = JSON.parse(http.request(request).body)
           workflows.each do |workflow|
             if workflow["injectableName"].include? 'DeprovisionNode'
-              request = Net::HTTP::Post.new("/api/common/nodes/#{config["node"]}/workflows")
+              request = Net::HTTP::Post.new("/api/common/nodes/#{node_id}/workflows")
               request.body = {name: workflow["injectableName"], options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
               request.set_content_type('application/json')
 
               resp = http.request(request)
               case resp
                 when Net::HTTPCreated
-                  return 'Successfully kicked off deprovision workflow.'
+                  puts 'Successfully kicked off deprovision workflow.'
+                  return
                 else
-                  return 'Failed to kick off deprovision workflow.'
+                  puts 'Failed to kick off deprovision workflow.'
               end
             end
           end
-
-          return 'No deprovision workflow found on RackHD server.'
+        else
+          puts 'No deprovision workflow found on RackHD server.'
       end
     end
 

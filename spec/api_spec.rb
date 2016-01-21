@@ -4,12 +4,13 @@ require_relative '../lib/rackhd/api'
 
 describe RackHD::API do
   subject { RackHD::API }
+  let(:node_id) { 'node_id' }
+  let(:status) { 'available' }
+  let(:config) { {'target' => 'my.server', 'password' => 'password'} }
 
   context 'with a target' do
     describe '.get_nodes' do
       it 'returns the list of nodes' do
-        config = {"target" => 'my.server'}
-
         nodes_response = File.read('fixtures/nodes.json')
 
         stub_request(:get, "http://#{config["target"]}:8080/api/common/nodes")
@@ -23,10 +24,9 @@ describe RackHD::API do
 
     describe '.delete' do
       it 'sends a DELETE request to just that node' do
-        config = {"target" => 'my.server', "node" => 'node_id'}
-        stub = stub_request(:delete, "http://#{config["target"]}:8080/api/common/nodes/#{config["node"]}")
+        stub = stub_request(:delete, "http://#{config["target"]}:8080/api/common/nodes/#{node_id}")
 
-        subject.delete(config)
+        subject.delete(config, node_id)
 
         expect(stub).to have_been_requested
       end
@@ -34,11 +34,10 @@ describe RackHD::API do
 
     describe '.set_status' do
       it 'sets the provided status' do
-        config = {"target" => 'my.server', "node" => 'node_id', "status" => 'available'}
-        stub = stub_request(:patch, "http://#{config["target"]}:8080/api/common/nodes/#{config["node"]}")
-          .with(body: { status: config["status"] }.to_json, headers: {'Content-Type' => 'application/json'})
+        stub = stub_request(:patch, "http://#{config["target"]}:8080/api/common/nodes/#{node_id}")
+                 .with(body: {status: status}.to_json, headers: {'Content-Type' => 'application/json'})
 
-        subject.set_status(config)
+        subject.set_status(config, node_id, status)
 
         expect(stub).to have_been_requested
       end
@@ -46,15 +45,13 @@ describe RackHD::API do
 
     describe '.set_amt' do
       it 'configures a node to use the amt obm service' do
-        config = {"target" => 'my.server', "node" => 'node_id', "password" => 'password'}
-
         host = 'my_host'
-        stub_request(:get, "http://#{config["target"]}:8080/api/common/nodes/#{config["node"]}")
+        stub_request(:get, "http://#{config["target"]}:8080/api/common/nodes/#{node_id}")
           .to_return(body: {name: host}.to_json)
-        stub = stub_request(:patch, "http://#{config["target"]}:8080/api/common/nodes/#{config["node"]}")
-          .with(body: "{\"obmSettings\":[{\"service\":\"amt-obm-service\",\"config\":{\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
+        stub = stub_request(:patch, "http://#{config["target"]}:8080/api/common/nodes/#{node_id}")
+                 .with(body: "{\"obmSettings\":[{\"service\":\"amt-obm-service\",\"config\":{\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
 
-        subject.set_amt(config)
+        subject.set_amt(config, node_id)
 
         expect(stub).to have_been_requested
       end
@@ -62,9 +59,6 @@ describe RackHD::API do
 
     describe '.delete_orphan_disks' do
       it 'remove disk setting from node without cid' do
-        config = {"target" => 'my.server', "node" => 'node_id', "password" => 'password'}
-
-        # host = 'my_host'
         nodes_response = File.read('fixtures/nodes.json')
         stub_request(:get, "http://#{config["target"]}:8080/api/common/nodes")
           .to_return(body: nodes_response)
@@ -80,14 +74,12 @@ describe RackHD::API do
 
     describe '.get_active_workflow' do
       it 'gets the active workflow of a node' do
-        config = {"target" => 'my.server', "node" => 'node_id'}
-
         workflow_name = "Graph.Fake.Workflow.12345"
 
         stub_request(:get, "http://#{config["target"]}:8080/api/common/nodes/node_id/workflows/active")
-          .to_return(body: { definition: { injectableName: workflow_name}}.to_json)
+          .to_return(body: {definition: {injectableName: workflow_name}}.to_json)
 
-        active_workflow = subject.get_active_workflow(config)
+        active_workflow = subject.get_active_workflow(config, node_id)
 
         expect(active_workflow).to eq(workflow_name)
       end
@@ -95,8 +87,6 @@ describe RackHD::API do
 
     describe '.deprovision_node' do
       it 'deprovision node' do
-        config = {"target" => 'my.server', "node" => 'node_id'}
-
         workflow1 = 'Graph.BOSH.DeprovisionNode.815b3847-53a9-4fba-a9d6-694abb96ecc7'
         workflow2 = 'Graph.BOSH.DeprovisionNode.815b3847-53a9-4fba-a9d6-694abb96ecc8'
 
@@ -106,10 +96,10 @@ describe RackHD::API do
 
         expected_body = {name: workflow1, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
 
-        stub = stub_request(:post, "http://#{config['target']}:8080/api/common/nodes/#{config['node']}/workflows")
+        stub = stub_request(:post, "http://#{config['target']}:8080/api/common/nodes/#{node_id}/workflows")
                  .with(body: expected_body).to_return(status: 201)
 
-        subject.deprovision_node(config)
+        subject.deprovision_node(config, node_id)
 
         expect(stub).to have_been_requested
       end
@@ -117,16 +107,14 @@ describe RackHD::API do
 
     describe '.restart_node' do
       it 'posts a reboot workflow to the specified node' do
-        config = {"target" => 'my.server', "node" => 'node_id'}
-
         workflow = 'Graph.Reboot.Node'
 
         expectedBody = {name: workflow, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
 
-        stub = stub_request(:post, "http://#{config['target']}:8080/api/common/nodes/#{config['node']}/workflows")
+        stub = stub_request(:post, "http://#{config['target']}:8080/api/common/nodes/#{node_id}/workflows")
                  .with(body: expectedBody).to_return(status: 201)
 
-        subject.restart_node(config)
+        subject.restart_node(config, node_id)
 
         expect(stub).to have_been_requested
       end
