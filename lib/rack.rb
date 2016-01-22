@@ -25,16 +25,16 @@ class RackHDCLI < Thor
     nodes = RackHD::API.get_nodes(config)
     node_names = config['node_names']
     nodes.each do |node|
-      node['cid'] = 'n/a' unless node['cid']
-      node['status'] = 'n/a' unless node['status']
       mac_addr = node['name']
       node['name'] = "#{mac_addr} (#{node_names[mac_addr]})" if node_names
+      node['cid'] = 'n/a' unless node['cid']
+      node['status'] = 'n/a' unless node['status']
       if node['persistent_disk'] && node['persistent_disk']['disk_cid']
         node['disk cid'] = node['persistent_disk']['disk_cid']
       else
         node['disk cid'] = 'n/a'
       end
-      node['active workflow'] = RackHD::API.get_active_workflow(config, node['cid'])
+      node['active workflow'] = RackHD::API.get_active_workflow(config, node['id'])
     end
 
     tp nodes, 'id', 'name', 'cid', 'status', 'disk cid', 'active workflow'
