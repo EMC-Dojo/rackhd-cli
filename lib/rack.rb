@@ -18,6 +18,15 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
+  desc 'free-nodes', 'Set all nodes status as available'
+  def free_nodes
+    config = RackHD::Config.load_config(options)
+
+    print 'Setting status to available for all nodes...'
+    RackHD::API.free_nodes(config)
+    puts 'done'
+  end
+
   desc 'nodes', 'Print a table with information about all nodes'
   def nodes
     config = RackHD::Config.load_config(options)

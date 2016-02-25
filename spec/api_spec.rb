@@ -11,13 +11,13 @@ describe RackHD::API do
   context 'with a target' do
     describe '.get_nodes' do
       it 'returns the list of nodes' do
-        nodes_response = File.read('fixtures/nodes.json')
+        nodes_response_body = File.read('fixtures/nodes.json')
 
         stub_request(:get, "#{config['target']}/api/common/nodes")
-          .to_return(body: nodes_response)
+          .to_return(body: nodes_response_body)
 
         nodes = subject.get_nodes(config)
-        expect(nodes).to match_array(JSON.parse(nodes_response))
+        expect(nodes).to match_array(JSON.parse(nodes_response_body))
       end
     end
 
@@ -37,6 +37,36 @@ describe RackHD::API do
 
         subject.set_status(config, node_id, status)
         expect(stub).to have_been_requested
+      end
+    end
+
+    describe '.free_nodes' do
+      context 'all nodes are available' do
+        it 'get nodes and would not make patch request' do
+          nodes_response_body = File.read('fixtures/nodes.json')
+
+          stub = stub_request(:get, "#{config['target']}/api/common/nodes")
+            .to_return(body: nodes_response_body)
+
+          subject.free_nodes(config)
+          expect(stub).to have_been_requested
+        end
+      end
+
+      context 'not all the nodes are available' do
+        it 'get nodes and will make a patch request' do
+          nodes_response_body = File.read('fixtures/nodes_not_all_available.json')
+
+          stub_get = stub_request(:get, "#{config['target']}/api/common/nodes")
+                   .to_return(body: nodes_response_body)
+          stub_node1 = stub_request(:patch, "#{config['target']}/api/common/nodes/node1")
+                   .with(body: {status: status}.to_json,
+                         headers: {'Content-Type' => 'application/json'})
+
+          subject.free_nodes(config)
+          expect(stub_get).to have_been_requested
+          expect(stub_node1).to have_been_requested
+        end
       end
     end
 

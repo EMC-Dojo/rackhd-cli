@@ -5,10 +5,29 @@ require 'yaml'
 module RackHD
   class API
 
+    def self.free_nodes(config)
+      raise 'Please specify a target.' unless config['target']
+
+      http = Net::HTTP.new(config['target'], config['port'])
+      request = Net::HTTP::Get.new('/api/common/nodes')
+      nodes = JSON.parse(http.request(request).body)
+
+      nodes.each do |node|
+        if node['status'] != 'available'
+            node_id = node['id']
+            request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
+            request.body = {status: 'available'}.to_json
+            request.set_content_type('application/json')
+            http.request(request)
+        end
+      end
+    end
+
     def self.get_nodes(config)
       raise 'Please specify a target.' unless config['target']
 
       http = Net::HTTP.new(config['target'], config['port'])
+
       request = Net::HTTP::Get.new('/api/common/nodes')
       JSON.parse(http.request(request).body)
     end
