@@ -6,9 +6,10 @@ require 'rackhd/api'
 require 'rackhd/config'
 
 class RackHDCLI < Thor
-  class_option :target, :aliases => "-t", :desc => "RackHD server IP address"
+  class_option :target, :aliases => '-t', :desc => 'RackHD server host'
+  class_option :port, :aliases => '-p', :desc => 'RackHD server port'
 
-  desc "delete NODE", "Delete NODE from the database"
+  desc 'delete NODE', 'Delete NODE from the database'
   def delete(node)
     config = RackHD::Config.load_config(options)
 
@@ -17,7 +18,7 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
-  desc "nodes", "Print a table with information about all nodes"
+  desc 'nodes', 'Print a table with information about all nodes'
   def nodes
     config = RackHD::Config.load_config(options)
 
@@ -40,7 +41,7 @@ class RackHDCLI < Thor
     tp nodes, 'id', 'name', 'cid', 'status', 'disk cid', 'active workflow'
   end
 
-  desc "delete-orphan-disks", "Delete all orphan disks"
+  desc 'delete-orphan-disks', 'Delete all orphan disks'
   def delete_orphan_disks
     config = RackHD::Config.load_config(options)
 
@@ -49,15 +50,16 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
-  desc "deprovision NODE", "Run deprovision workflow on NODE"
+  desc 'deprovision NODE', 'Run deprovision workflow on NODE'
   def deprovision(node)
     config = RackHD::Config.load_config(options)
 
-    print "Deprovisioning node #{node}...\n"
+    print "Deprovisioning node #{node}..."
     RackHD::API.deprovision_node(config, node)
+    puts 'done'
   end
 
-  desc "status NODE STATUS", "Set status on NODE to STATUS"
+  desc 'status NODE STATUS', 'Set status on NODE to STATUS'
   def status(node, status)
     config = RackHD::Config.load_config(options)
 
@@ -66,8 +68,17 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
-  option :password, :aliases => "-p", :desc => "AMT password"
-  desc "amt NODE", "Configure NODE to use AMT OBM service"
+  desc 'detach-disk NODE', 'Detach disk on NODE'
+  def detach_disk(node)
+    config = RackHD::Config.load_config(options)
+
+    print "Detaching disk on node #{node}..."
+    RackHD::API.detach_disk(config, node)
+    puts 'done'
+  end
+
+  option :password, :aliases => '-x', :desc => 'AMT password'
+  desc 'amt NODE', 'Configure NODE to use AMT OBM service'
   def amt(node)
     config = RackHD::Config.load_config(options)
 
@@ -76,7 +87,7 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
-  desc "reboot NODE", "Reboot NODE"
+  desc 'reboot NODE', 'Reboot NODE'
   def reboot(node)
     config = RackHD::Config.load_config(options)
 
@@ -85,19 +96,19 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
-  desc "rediscover NODE", "Rediscover node"
+  desc 'rediscover NODE', 'Rediscover node'
   def rediscover(node)
     reboot(node)
     sleep 5
     delete(node)
-    puts "Warning: rediscovered node is missing OBM settings"
+    puts 'Warning: rediscovered node is missing OBM settings'
   end
 
-  desc "clean", "Delete all files uploaded to RackHD Server"
+  desc 'clean', 'Delete all files uploaded to RackHD Server'
   def clean
     config = RackHD::Config.load_config(options)
 
-    print "Deleting all uploads..."
+    print 'Deleting all uploads...'
     files = RackHD::API.clean_files(config)
     puts 'done'
     puts "Removed #{files.length} files."

@@ -1,0 +1,30 @@
+{
+  "workflows": [],
+  "catalogs": [],
+  "autoDiscover": false,
+  "createdAt": "2016-01-06T19:27:37.348Z",
+  "identifiers": [
+    "c0:3f:d5:60:51:62"
+  ],
+  "name": "c0:3f:d5:60:51:62",
+  "obmSettings": [
+    {
+      "service": "amt-obm-service",
+      "config": {
+        "host": "c0:3f:d5:60:51:62",
+        "password": "Password1+"
+      }
+    }
+  ],
+  "persistent_disk": {
+    "disk_cid": "node_id-uuid",
+    "location": "/dev/sdb",
+    "attached": true
+  },
+  "cid": "node_cid",
+  "sku": null,
+  "status": "available",
+  "type": "compute",
+  "updatedAt": "2016-01-06T22:06:49.071Z",
+  "id": "node_id"
+}
