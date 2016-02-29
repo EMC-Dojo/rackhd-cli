@@ -196,11 +196,9 @@ module RackHD
         config['server_username'],
         :password => config['server_password']
       ) do |ssh|
-        ssh.exec!("sudo ip -s -s neigh flush all")
-        ssh.exec!("sudo ip -s -s neigh flush all")
-        ssh.exec!("sudo ip -s -s neigh flush all")
-        ssh.exec!("sudo ip -s -s neigh flush all")
-        ssh.exec!("sudo ip -s -s neigh flush all")
+        5.times do
+          ssh.exec!("sudo ip -s -s neigh flush all")
+        end
         ssh.exec!("ping #{config['server_gateway']} -c 1")
         arp_table = ssh.exec!("arp -n")
 
