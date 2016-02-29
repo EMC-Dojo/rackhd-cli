@@ -27,15 +27,23 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
+  option :with_ips, :aliases => "-a", :desc => "Show IPs of nodes in table"
   desc 'nodes', 'Print a table with information about all nodes'
   def nodes
     config = RackHD::Config.load_config(options)
-
     puts "Nodes on target #{config['target']}:\n\n"
     nodes = RackHD::API.get_nodes(config)
+
+    if config['with_ips']
+      node_ips = RackHD::API.get_nodes_ips_from_server(config)
+    end
     node_names = config['node_names']
+
     nodes.each do |node|
       mac_addr = node['name']
+      if config['with_ips']
+        node['ip'] = node_ips[mac_addr]
+      end
       node['name'] = "#{mac_addr} (#{node_names[mac_addr]})" if node_names
       node['cid'] = 'n/a' unless node['cid']
       node['status'] = 'n/a' unless node['status']
@@ -47,7 +55,11 @@ class RackHDCLI < Thor
       node['active workflow'] = RackHD::API.get_active_workflow(config, node['id'])
     end
 
-    tp nodes, 'id', 'name', 'cid', 'status', 'disk cid', 'active workflow'
+    if config['with_ips']
+      tp nodes, 'id', 'name', 'cid', 'status', 'disk cid', 'active workflow', 'ip'
+    else
+      tp nodes, 'id', 'name', 'cid', 'status', 'disk cid', 'active workflow'
+    end
   end
 
   desc 'delete-orphan-disks', 'Delete all orphan disks'

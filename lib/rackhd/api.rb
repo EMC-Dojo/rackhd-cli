@@ -1,6 +1,7 @@
 require 'json'
 require 'net/http'
 require 'yaml'
+require 'net/ssh'
 
 module RackHD
   class API
@@ -187,6 +188,34 @@ module RackHD
       request.body = {persistent_disk: persistent_disk}.to_json
       request.set_content_type('application/json')
       http.request(request)
+    end
+
+    def self.get_nodes_ips_from_server(config)
+      Net::SSH.start(
+        config['target'],
+        config['server_username'],
+        :password => config['server_password']
+      ) do |ssh|
+        ssh.exec!("sudo ip -s -s neigh flush all")
+        ssh.exec!("sudo ip -s -s neigh flush all")
+        ssh.exec!("sudo ip -s -s neigh flush all")
+        ssh.exec!("sudo ip -s -s neigh flush all")
+        ssh.exec!("sudo ip -s -s neigh flush all")
+        ssh.exec!("ping #{config['server_gateway']} -c 1")
+        arp_table = ssh.exec!("arp -n")
+
+        result = {}
+        arp_table.each_line.with_index do |line, i|
+          next if i == 0
+          cols = line.split(' ')
+
+          if cols.length == 5
+            result[cols[2]] = cols[0]
+          end
+        end
+
+        result
+      end
     end
   end
 end

@@ -1,12 +1,24 @@
 require 'rspec'
 require 'webmock/rspec'
 require_relative '../lib/rackhd/api'
+require 'net/ssh'
 
 describe RackHD::API do
   subject { RackHD::API }
   let(:node_id) { 'node_id' }
   let(:status) { 'available' }
-  let(:config) { {'target' => 'my.server:8080', 'password' => 'password'} }
+
+  let (:rackhd_gateway) { 'fake-gateway'}
+  let (:rackhd_host) {'my.server:8080'}
+  let (:rackhd_username) {'fake-username'}
+  let (:rackhd_password) {'fake-password'}
+  let(:config) { {
+    'target' => rackhd_host,
+    'password' => 'password',
+    'server_username' => rackhd_username,
+    'server_password' => rackhd_password,
+    'server_gateway' => rackhd_gateway
+  }}
 
   context 'with a target' do
     describe '.get_nodes' do
@@ -18,6 +30,33 @@ describe RackHD::API do
 
         nodes = subject.get_nodes(config)
         expect(nodes).to match_array(JSON.parse(nodes_response_body))
+      end
+    end
+
+    describe '.get_nodes_ips_from_server' do
+      let (:ssh_connection) { double('SSH Connection') }
+      let (:arp_table) do
+        File.read("spec/arp_table.txt")
+      end
+
+      before (:each) do
+        expect(Net::SSH)
+          .to receive(:start)
+          .with(rackhd_host, rackhd_username, {:password => rackhd_password})
+          .and_yield(ssh_connection)
+      end
+
+      it 'return a map between nodes mac address and their ips' do
+        expect(ssh_connection).to receive(:exec!).with("sudo ip -s -s neigh flush all").exactly(5).times
+        expect(ssh_connection).to receive(:exec!).with("ping #{rackhd_gateway} -c 1")
+        expect(ssh_connection).to receive(:exec!).with("arp -n").and_return(arp_table)
+
+        node_ip_map = subject.get_nodes_ips_from_server(config)
+        expect(node_ip_map).to eq({
+            "48:ee:0c:67:43:68" => "192.168.10.1",
+            "c0:3f:d5:63:fe:15" => "172.31.129.102",
+            "98:5a:eb:e2:9b:0c" => "192.168.0.99",
+            })
       end
     end
 

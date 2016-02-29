@@ -6,6 +6,7 @@ GEM
       safe_yaml (~> 1.0.0)
     diff-lcs (1.2.5)
     hashdiff (0.2.3)
+    net-ssh (3.0.2)
     rspec (3.4.0)
       rspec-core (~> 3.4.0)
       rspec-expectations (~> 3.4.0)
@@ -31,6 +32,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  addressable
+  net-ssh
   rspec
   table_print
   thor
