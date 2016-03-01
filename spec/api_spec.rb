@@ -17,7 +17,8 @@ describe RackHD::API do
     'password' => 'password',
     'server_username' => rackhd_username,
     'server_password' => rackhd_password,
-    'server_gateway' => rackhd_gateway
+    'server_gateway' => rackhd_gateway,
+    'node_names' => {"c0:3f:d5:60:51:93" => "fakenodealias"}
   }}
 
   context 'with a target' do
@@ -66,6 +67,20 @@ describe RackHD::API do
 
         subject.delete(config, node_id)
         expect(stub).to have_been_requested
+      end
+    end
+
+    describe '.delete_by_alias' do
+      it 'sends a DELETE request to just that node' do
+        nodes_response_body = File.read('fixtures/nodes.json')
+
+        delete_stub = stub_request(:delete, "#{config['target']}/api/common/nodes/node1")
+        node_stub = stub_request(:get, "#{config['target']}/api/common/nodes")
+                           .to_return(body: nodes_response_body)
+
+        subject.delete(config, 'fakenodealias')
+        expect(node_stub).to have_been_requested
+        expect(delete_stub).to have_been_requested
       end
     end
 

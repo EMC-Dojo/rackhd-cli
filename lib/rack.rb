@@ -9,7 +9,7 @@ class RackHDCLI < Thor
   class_option :target, :aliases => '-t', :desc => 'RackHD server host'
   class_option :port, :aliases => '-p', :desc => 'RackHD server port'
 
-  desc 'delete NODE', 'Delete NODE from the database'
+  desc 'delete NODE', 'Delete NODE (nodeid or alias) from the database'
   def delete(node)
     config = RackHD::Config.load_config(options)
 

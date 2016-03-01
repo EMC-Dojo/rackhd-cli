@@ -36,6 +36,26 @@ module RackHD
     def self.delete(config, node_id)
       raise 'Please specify a target.' unless config['target']
 
+      node_names = config['node_names']
+
+      if node_names.has_value? node_id
+        node_names.each do |mac,name|
+          if node_id == name
+            found_mac = mac
+            nodes = get_nodes(config)
+            nodes.each do |node|
+              if node['name'] == found_mac
+                http = Net::HTTP.new(config['target'], config['port'])
+                request = Net::HTTP::Delete.new("/api/common/nodes/#{node['id']}")
+                http.request(request)
+                puts 'Deleted friendly ' + node['id']
+                return
+              end
+              end
+          end
+        end
+      end
+
       http = Net::HTTP.new(config['target'], config['port'])
       request = Net::HTTP::Delete.new("/api/common/nodes/#{node_id}")
       http.request(request)
