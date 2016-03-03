@@ -181,6 +181,7 @@ module RackHD
               resp = http.request(request)
 
               raise 'Failed to kick off deprovision workflow.' unless resp.kind_of? Net::HTTPCreated
+              return
             end
           end
         else
