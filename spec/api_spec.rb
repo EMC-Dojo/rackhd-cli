@@ -195,6 +195,29 @@ describe RackHD::API do
       end
     end
 
+    describe '.deprovision_node with friendly name provided' do
+      it 'deprovision node' do
+        workflow = 'Graph.BOSH.DeprovisionNode.815b3847-53a9-4fba-a9d6-694abb96ecc8'
+
+        stub_workflow = stub_request(:get, "#{config['target']}/api/common/workflows/library")
+          .to_return(body: [{injectableName: workflow}].to_json)
+
+        expected_body = {name: workflow, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+
+        nodes_response_body = File.read('fixtures/nodes.json')
+
+        node_stub = stub_request(:get, "#{config['target']}/api/common/nodes")
+          .to_return(body: nodes_response_body)
+
+        stub = stub_request(:post, "#{config['target']}/api/common/nodes/node1/workflows")
+                 .with(body: expected_body).to_return(status: 201)
+
+        subject.deprovision_node(config, "fakenodealias")
+        expect(node_stub).to have_been_requested
+        expect(stub).to have_been_requested
+      end
+    end
+
     describe '.restart_node' do
       it 'posts a reboot workflow to the specified node' do
         workflow = 'Graph.Reboot.Node'

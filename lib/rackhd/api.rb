@@ -51,7 +51,7 @@ module RackHD
                 puts 'Deleted friendly ' + node['id']
                 return
               end
-              end
+            end
           end
         end
       end
@@ -149,6 +149,23 @@ module RackHD
       http = Net::HTTP.new(config['target'], config['port'])
       request = Net::HTTP::Get.new('/api/common/workflows/library')
       response = http.request(request)
+
+      if config['node_names'].values.include? node_id
+        mac_addr=String.new
+        config['node_names'].each do |k,v|
+          if v==node_id
+            mac_addr=k
+          end
+        end
+
+        nodes=get_nodes(config)
+        nodes.each do |node|
+          if node['name'] == mac_addr
+            node_id=node['id']
+          end
+        end
+
+      end
 
       case response
         when Net::HTTPNoContent
