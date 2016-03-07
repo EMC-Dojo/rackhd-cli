@@ -72,26 +72,11 @@ module RackHD
     end
 
     def self.set_amt(config, node_id)
-      raise 'Please specify a target.' unless config['target']
-      raise 'Please specify a password.' unless config['password']
+      self.set_obm(config, node_id, "amt")
+    end
 
-      http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}")
-      response = http.request(request)
-
-      host = JSON.parse(response.body)['name']
-      request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
-      request.body = {
-        obmSettings: [{
-            service: 'amt-obm-service',
-            config: {
-              host: host,
-              password: config['password']
-            }
-          }]
-      }.to_json
-      request.set_content_type('application/json')
-      http.request(request)
+    def self.set_ipmi(config, node_id)
+      self.set_obm(config, node_id, "ipmi")
     end
 
     def self.delete_orphan_disks(config)
@@ -252,6 +237,30 @@ module RackHD
 
         result
       end
+    end
+
+    private
+    def self.set_obm(config, node_id, name)
+      raise 'Please specify a target.' unless config['target']
+      raise 'Please specify a password.' unless config['password']
+
+      http = Net::HTTP.new(config['target'], config['port'])
+      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}")
+      response = http.request(request)
+
+      host = JSON.parse(response.body)['name']
+      request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
+      request.body = {
+        obmSettings: [{
+            service: "#{name}-obm-service",
+            config: {
+              host: host,
+              password: config['password']
+            }
+          }]
+      }.to_json
+      request.set_content_type('application/json')
+      http.request(request)
     end
   end
 end

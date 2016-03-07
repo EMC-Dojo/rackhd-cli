@@ -152,6 +152,19 @@ describe RackHD::API do
       end
     end
 
+    describe '.set_ipmi' do
+      it 'configures a node to use the amt obm service' do
+        host = 'my_host'
+        stub_request(:get, "#{config['target']}/api/common/nodes/#{node_id}")
+          .to_return(body: {name: host}.to_json)
+        stub = stub_request(:patch, "#{config['target']}/api/common/nodes/#{node_id}")
+                 .with(body: "{\"obmSettings\":[{\"service\":\"ipmi-obm-service\",\"config\":{\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
+
+        subject.set_ipmi(config, node_id)
+        expect(stub).to have_been_requested
+      end
+    end
+
     describe '.delete_orphan_disks' do
       it 'remove disk setting from node without cid' do
         nodes_response = File.read('fixtures/nodes.json')

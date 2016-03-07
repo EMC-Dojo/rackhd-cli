@@ -108,6 +108,16 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
+  option :password, :aliases => '-x', :desc => 'IPMI password'
+  desc 'ipmi NODE', 'Configure NODE to use IPMI OBM service'
+  def ipmi(node)
+    config = RackHD::Config.load_config(options)
+
+    print "Configuring AMT for node #{node}..."
+    RackHD::API.set_ipmi(config, node)
+    puts 'done'
+  end
+
   desc 'reboot NODE', 'Reboot NODE'
   def reboot(node)
     config = RackHD::Config.load_config(options)
