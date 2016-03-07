@@ -254,6 +254,7 @@ module RackHD
         obmSettings: [{
             service: "#{name}-obm-service",
             config: {
+              user: config['obm_user'],
               host: host,
               password: config['password']
             }

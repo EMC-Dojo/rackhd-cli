@@ -14,6 +14,7 @@ describe RackHD::API do
   let (:rackhd_password) {'fake-password'}
   let(:config) { {
     'target' => rackhd_host,
+    'obm_user' => 'root',
     'password' => 'password',
     'server_username' => rackhd_username,
     'server_password' => rackhd_password,
@@ -145,7 +146,7 @@ describe RackHD::API do
         stub_request(:get, "#{config['target']}/api/common/nodes/#{node_id}")
           .to_return(body: {name: host}.to_json)
         stub = stub_request(:patch, "#{config['target']}/api/common/nodes/#{node_id}")
-                 .with(body: "{\"obmSettings\":[{\"service\":\"amt-obm-service\",\"config\":{\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
+                 .with(body: "{\"obmSettings\":[{\"service\":\"amt-obm-service\",\"config\":{\"user\":\"root\",\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
 
         subject.set_amt(config, node_id)
         expect(stub).to have_been_requested
@@ -158,7 +159,7 @@ describe RackHD::API do
         stub_request(:get, "#{config['target']}/api/common/nodes/#{node_id}")
           .to_return(body: {name: host}.to_json)
         stub = stub_request(:patch, "#{config['target']}/api/common/nodes/#{node_id}")
-                 .with(body: "{\"obmSettings\":[{\"service\":\"ipmi-obm-service\",\"config\":{\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
+                 .with(body: "{\"obmSettings\":[{\"service\":\"ipmi-obm-service\",\"config\":{\"user\":\"root\",\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
 
         subject.set_ipmi(config, node_id)
         expect(stub).to have_been_requested
