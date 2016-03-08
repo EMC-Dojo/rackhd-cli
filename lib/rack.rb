@@ -53,6 +53,7 @@ class RackHDCLI < Thor
       else
         node['disk cid'] = 'n/a'
       end
+
       node['active workflow'] = RackHD::API.get_active_workflow(config, node['id'])
     end
 
@@ -61,6 +62,15 @@ class RackHDCLI < Thor
     else
       tp nodes, 'id', 'name', 'obm', 'cid', 'status', 'disk cid', 'active workflow'
     end
+  end
+
+  desc 'node NODE', 'Get node information'
+  def node(node)
+    config = RackHD::Config.load_config(options)
+
+    print "Getting node information...\n"
+    node = RackHD::API.get_node(config, node)
+    puts JSON.pretty_generate(node)
   end
 
   desc 'delete-orphan-disks', 'Delete all orphan disks'

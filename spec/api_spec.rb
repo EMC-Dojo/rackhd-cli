@@ -95,6 +95,16 @@ describe RackHD::API do
       end
     end
 
+    describe '.get_node' do
+      it 'get the node information' do
+        node_response = File.read('fixtures/node.json')
+        stub = stub_request(:get, "#{config['target']}/api/common/nodes/#{node_id}")
+                  .to_return(body: node_response)
+        subject.get_node(config, node_id)
+        expect(stub).to have_been_requested
+      end
+    end
+
     describe '.free_nodes' do
       context 'all nodes are available' do
         it 'get nodes and would not make patch request' do

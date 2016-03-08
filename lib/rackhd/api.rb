@@ -33,6 +33,13 @@ module RackHD
       JSON.parse(http.request(request).body)
     end
 
+    def self.get_node(config, node_id)
+      raise 'Please specify a target.' unless config['target']
+      http = Net::HTTP.new(config['target'], config['port'])
+      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}")
+      JSON.parse(http.request(request).body)
+    end
+
     def self.delete(config, node_id)
       raise 'Please specify a target.' unless config['target']
 
