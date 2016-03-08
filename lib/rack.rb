@@ -44,7 +44,8 @@ class RackHDCLI < Thor
       if config['with_ips']
         node['ip'] = node_ips[mac_addr]
       end
-      node['name'] = "#{mac_addr} (#{node_names[mac_addr]})" if node_names
+      node['name'] = node_names && node_names[mac_addr] ? "#{node_names[mac_addr]}" : "#{mac_addr}"
+      node['obm'] = node['obmSettings'].first['service'].split('-').first
       node['cid'] = 'n/a' unless node['cid']
       node['status'] = 'n/a' unless node['status']
       if node['persistent_disk'] && node['persistent_disk']['disk_cid']
@@ -56,9 +57,9 @@ class RackHDCLI < Thor
     end
 
     if config['with_ips']
-      tp nodes, 'id', 'name', 'cid', 'status', 'disk cid', 'active workflow', 'ip'
+      tp nodes, 'id', 'name', 'obm', 'cid', 'status', 'disk cid', 'active workflow', 'ip'
     else
-      tp nodes, 'id', 'name', 'cid', 'status', 'disk cid', 'active workflow'
+      tp nodes, 'id', 'name', 'obm', 'cid', 'status', 'disk cid', 'active workflow'
     end
   end
 
