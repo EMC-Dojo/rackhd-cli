@@ -135,6 +135,25 @@ describe RackHD::API do
       end
     end
 
+    describe '.space-used' do
+      let (:ssh_connection) { double('SSH Connection') }
+      let (:used_table) do
+        File.read("spec/used_table.txt")
+      end
+
+      before (:each) do
+        expect(Net::SSH)
+          .to receive(:start)
+                .with(rackhd_host, rackhd_username, {:password => rackhd_password})
+                .and_yield(ssh_connection)
+      end
+
+      it 'returns the space in use on RackHD VM' do
+        expect(ssh_connection).to receive(:exec!).with("df -h | grep -wE 'Filesystem|/'").and_return(used_table).exactly(1).times
+        subject.get_space_used(config)
+      end
+    end
+
     describe '.detach_disk' do
       it 'detaches the disk' do
         node_response = File.read('fixtures/node.json')

@@ -95,6 +95,12 @@ class RackHDCLI < Thor
     end
   end
 
+  desc 'space-used', 'Return the space used on the RackHD server'
+  def space_used()
+    config = RackHD::Config.load_config(options)
+    puts RackHD::API.get_space_used(config)
+  end
+
   desc 'status NODE STATUS', 'Set status on NODE to STATUS'
   def status(node, status)
     config = RackHD::Config.load_config(options)

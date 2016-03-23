@@ -121,6 +121,19 @@ module RackHD
       end
     end
 
+    def self.get_space_used(config)
+      raise 'Please specify a target' unless config['target']
+
+      target = config['target']
+      user = config['server_username']
+      password = config['server_password']
+
+      Net::SSH.start( target, user, :password => password ) do|ssh|
+        result = ssh.exec!("df -h | grep -wE 'Filesystem|/'")
+      return result
+      end
+    end
+
     def self.restart_node(config, node_id)
       raise 'Please specify a target.' unless config['target']
 
