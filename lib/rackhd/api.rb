@@ -181,6 +181,40 @@ module RackHD
       end
     end
 
+    def self.deprovision_all_nodes(config)
+      raise 'Please specify a target.' unless config['target']
+
+      http = Net::HTTP.new(config['target'], config['port'])
+      request = Net::HTTP::Get.new('/api/common/workflows/library')
+      response = http.request(request)
+
+      #iterate through all nodes to be deprovisioned
+      case response
+        when Net::HTTPNoContent
+          puts 'No content'
+        when Net::HTTPOK
+          workflows = JSON.parse(http.request(request).body)
+          workflows.each do |workflow|
+            if workflow['injectableName'].include? 'DeprovisionNode'
+              nodes=get_nodes(config)
+              nodes.each do |node|
+                node_id=node['id']
+                request = Net::HTTP::Post.new("/api/common/nodes/#{node_id}/workflows")
+                request.body = {name: workflow['injectableName'], options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+                request.set_content_type('application/json')
+
+                resp = http.request(request)
+
+                raise 'Failed to kick off deprovision workflow.' unless resp.kind_of? Net::HTTPCreated
+              end
+              return
+            end
+          end
+        else
+          raise 'No deprovision workflow found on RackHD server.'
+      end
+    end
+
     def self.clean_files(config)
       raise 'Please specify a target.' unless config['target']
 

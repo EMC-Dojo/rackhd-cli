@@ -85,10 +85,14 @@ class RackHDCLI < Thor
   desc 'deprovision NODE', 'Run deprovision workflow on NODE'
   def deprovision(node)
     config = RackHD::Config.load_config(options)
-
-    print "Deprovisioning node #{node}..."
-    RackHD::API.deprovision_node(config, node)
-    puts 'done'
+    # check for all flag
+    if node.eql? 'all'
+      RackHD::API.deprovision_all_nodes(config)
+    else
+      print "Deprovisioning node #{node}..."
+      RackHD::API.deprovision_node(config, node)
+      puts 'done'
+    end
   end
 
   desc 'status NODE STATUS', 'Set status on NODE to STATUS'

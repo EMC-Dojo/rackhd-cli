@@ -1,0 +1,55 @@
+[
+  {
+    "workflows": [],
+    "catalogs": [],
+    "autoDiscover": false,
+    "createdAt": "2016-01-06T19:27:37.348Z",
+    "identifiers": [
+      "c0:3f:d5:60:51:60"
+    ],
+    "name": "c0:3f:d5:60:51:60",
+    "obmSettings": [
+      {
+        "service": "amt-obm-service",
+        "config": {
+          "host": "c0:3f:d5:60:51:60",
+          "password": "Password1+"
+        }
+      }
+    ],
+    "sku": null,
+    "status": "available",
+    "type": "compute",
+    "updatedAt": "2016-01-06T22:06:49.071Z",
+    "id": "node1"
+  },
+  {
+    "workflows": [],
+    "catalogs": [],
+    "autoDiscover": false,
+    "createdAt": "2016-01-06T19:27:37.348Z",
+    "identifiers": [
+      "c0:3f:d5:60:51:61"
+    ],
+    "name": "c0:3f:d5:60:51:61",
+    "obmSettings": [
+      {
+        "service": "amt-obm-service",
+        "config": {
+          "host": "c0:3f:d5:60:51:61",
+          "password": "Password1+"
+        }
+      }
+    ],
+    "persistent_disk": {
+      "disk_cid": "56956da78901fb1a05e62287",
+      "location": "/dev/sdb",
+      "attached": false
+    },
+    "sku": null,
+    "status": "available",
+    "type": "compute",
+    "updatedAt": "2016-01-06T22:06:49.071Z",
+    "id": "node2"
+  }
+]
