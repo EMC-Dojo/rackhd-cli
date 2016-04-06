@@ -5,6 +5,22 @@ require 'net/ssh'
 
 module RackHD
   class API
+    def self.rehash(config, config_file)
+      nodes = self.get_nodes(config)
+
+      node_aliases = {}
+      nodes.each do |node|
+        mac_addr = node['name']
+        node_alias = config_file['node_names'][mac_addr]
+        if node_alias
+          node_aliases[node_alias] = node['id']
+        end
+      end
+
+      config_file['node_aliases'] = node_aliases
+
+      config_file
+    end
 
     def self.free_nodes(config)
       raise 'Please specify a target.' unless config['target']

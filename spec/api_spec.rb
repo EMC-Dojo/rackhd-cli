@@ -23,6 +23,20 @@ describe RackHD::API do
   }}
 
   context 'with a target' do
+    describe '.rehash' do
+      it 'read in config file and build aliases in the same file' do
+        nodes_response_body = File.read('fixtures/nodes.json')
+
+        stub_request(:get, "#{config['target']}/api/common/nodes")
+          .to_return(body: nodes_response_body)
+
+        before_rehash_file = YAML.load_file('fixtures/before_rehash_file.yml')
+        modified_file = subject.rehash(config, before_rehash_file)
+        after_rehash_file = YAML.load_file('fixtures/after_rehash_file.yml')
+        expect(modified_file).to eq(after_rehash_file)
+      end
+    end
+
     describe '.get_nodes' do
       it 'returns the list of nodes' do
         nodes_response_body = File.read('fixtures/nodes.json')

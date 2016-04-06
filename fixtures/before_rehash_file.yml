@@ -1,0 +1,9 @@
+---
+node_names:
+  "c0:3f:d5:60:51:93": "john"
+  "c0:3f:d5:60:51:60": "doe"
+password: "something"
+target: "my.server"
+port: "8080"
+server_username: "fake-username"
+server_password: "fake-password"

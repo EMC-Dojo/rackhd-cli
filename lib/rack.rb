@@ -12,9 +12,9 @@ class RackHDCLI < Thor
   desc 'delete NODE', 'Delete NODE (nodeid or alias) from the database'
   def delete(node)
     config = RackHD::Config.load_config(options)
-
-    print "Deleting node #{node}..."
-    RackHD::API.delete(config, node)
+    node_id = resolve_node_name(config, node)
+    print "Deleting node #{node_id}..."
+    RackHD::API.delete(config, node_id)
     puts 'done'
   end
 
@@ -25,6 +25,14 @@ class RackHDCLI < Thor
     print 'Setting status to available for all nodes...'
     RackHD::API.free_nodes(config)
     puts 'done'
+  end
+
+  desc 'rehash', 'enable aliases'
+  def rehash
+    config = RackHD::Config.load_config(options)
+    config_file = RackHD::Config.load_config_file
+    modified_file = RackHD::API.rehash(config, config_file)
+    RackHD::Config.write_config_file(modified_file.to_yaml)
   end
 
   option :with_ips, :aliases => "-a", :desc => "Show IPs of nodes in table"
@@ -67,9 +75,9 @@ class RackHDCLI < Thor
   desc 'node NODE', 'Get node information'
   def node(node)
     config = RackHD::Config.load_config(options)
-
     print "Getting node information...\n"
-    node = RackHD::API.get_node(config, node)
+    node_id = resolve_node_name(config, node)
+    node = RackHD::API.get_node(config, node_id)
     puts JSON.pretty_generate(node)
   end
 
@@ -89,8 +97,9 @@ class RackHDCLI < Thor
     if node.eql? 'all'
       RackHD::API.deprovision_all_nodes(config)
     else
-      print "Deprovisioning node #{node}..."
-      RackHD::API.deprovision_node(config, node)
+      node_id = resolve_node_name(config, node)
+      print "Deprovisioning node #{node_id}..."
+      RackHD::API.deprovision_node(config, node_id)
       puts 'done'
     end
   end
@@ -104,18 +113,18 @@ class RackHDCLI < Thor
   desc 'status NODE STATUS', 'Set status on NODE to STATUS'
   def status(node, status)
     config = RackHD::Config.load_config(options)
-
-    print "Setting status on node #{node} to #{status}..."
-    RackHD::API.set_status(config, node, status)
+    node_id = resolve_node_name(config, node)
+    print "Setting status on node #{node_id} to #{status}..."
+    RackHD::API.set_status(config, node_id, status)
     puts 'done'
   end
 
   desc 'detach-disk NODE', 'Detach disk on NODE'
   def detach_disk(node)
     config = RackHD::Config.load_config(options)
-
-    print "Detaching disk on node #{node}..."
-    RackHD::API.detach_disk(config, node)
+    node_id = resolve_node_name(config, node)
+    print "Detaching disk on node #{node_id}..."
+    RackHD::API.detach_disk(config, node_id)
     puts 'done'
   end
 
@@ -123,9 +132,9 @@ class RackHDCLI < Thor
   desc 'amt NODE', 'Configure NODE to use AMT OBM service'
   def amt(node)
     config = RackHD::Config.load_config(options)
-
-    print "Configuring AMT for node #{node}..."
-    RackHD::API.set_amt(config, node)
+    node_id = resolve_node_name(config, node)
+    print "Configuring AMT for node #{node_id}..."
+    RackHD::API.set_amt(config, node_id)
     puts 'done'
   end
 
@@ -133,18 +142,18 @@ class RackHDCLI < Thor
   desc 'ipmi NODE', 'Configure NODE to use IPMI OBM service'
   def ipmi(node)
     config = RackHD::Config.load_config(options)
-
-    print "Configuring AMT for node #{node}..."
-    RackHD::API.set_ipmi(config, node)
+    node_id = resolve_node_name(config, node)
+    print "Configuring AMT for node #{node_id}..."
+    RackHD::API.set_ipmi(config, node_id)
     puts 'done'
   end
 
   desc 'reboot NODE', 'Reboot NODE'
   def reboot(node)
     config = RackHD::Config.load_config(options)
-
-    print "Rebooting node #{node}..."
-    RackHD::API.restart_node(config, node)
+    node_id = resolve_node_name(config, node)
+    print "Rebooting node #{node_id}..."
+    RackHD::API.restart_node(config, node_id)
     puts 'done'
   end
 
@@ -164,5 +173,15 @@ class RackHDCLI < Thor
     files = RackHD::API.clean_files(config)
     puts 'done'
     puts "Removed #{files.length} files."
+  end
+
+  private
+  def resolve_node_name(config, name)
+    node_aliases = config['node_aliases']
+    if node_aliases && node_aliases[name]
+      return node_aliases[name]
+    end
+
+    name
   end
 end
