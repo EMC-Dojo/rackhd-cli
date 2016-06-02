@@ -27,4 +27,4 @@ Run `rspec`
 	- Organization: <http://cloudfoundry.slack.com>
 	- Channel: `#bosh-rackhd-cpi`
 - Contact: [Email EMC Dojo](mailto:EMCdojo@emc.com) [@EMCDojo](https://twitter.com/hashtag/emcdojo)
-- Blog: [EMC Dojo Blog](dojoblog.emc.com)
+- Blog: [EMC Dojo Blog](http://dojoblog.emc.com)
