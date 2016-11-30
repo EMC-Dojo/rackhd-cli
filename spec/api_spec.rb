@@ -27,7 +27,7 @@ describe RackHD::API do
       it 'read in config file and build aliases in the same file' do
         nodes_response_body = File.read('fixtures/nodes.json')
 
-        stub_request(:get, "#{config['target']}/api/common/nodes")
+        stub_request(:get, "#{config['target']}/api/2.0/nodes")
           .to_return(body: nodes_response_body)
 
         before_rehash_file = YAML.load_file('fixtures/before_rehash_file.yml')
@@ -41,11 +41,24 @@ describe RackHD::API do
       it 'returns the list of nodes' do
         nodes_response_body = File.read('fixtures/nodes.json')
 
-        stub_request(:get, "#{config['target']}/api/common/nodes")
+        stub_request(:get, "#{config['target']}/api/2.0/nodes")
           .to_return(body: nodes_response_body)
 
         nodes = subject.get_nodes(config)
         expect(nodes).to match_array(JSON.parse(nodes_response_body))
+      end
+    end
+
+    describe '.get_node_tags' do
+      it 'return all node\'s tags' do
+        tag_json = File.read('fixtures/node_tags.json')
+        node_id = 'fake_node_id'
+
+        stub_request(:get, "#{config['target']}/api/2.0/nodes/#{node_id}/tags")
+          .to_return(body: tag_json)
+
+        tags = RackHD::API.get_node_tags(config, node_id)
+        expect(tags).to eq(["reserved", "4c9289ae-f1da"])
       end
     end
 
@@ -78,7 +91,7 @@ describe RackHD::API do
 
     describe '.delete' do
       it 'sends a DELETE request to just that node' do
-        stub = stub_request(:delete, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub = stub_request(:delete, "#{config['target']}/api/2.0/nodes/#{node_id}")
 
         subject.delete(config, node_id)
         expect(stub).to have_been_requested
@@ -89,8 +102,8 @@ describe RackHD::API do
       it 'sends a DELETE request to just that node' do
         nodes_response_body = File.read('fixtures/nodes.json')
 
-        delete_stub = stub_request(:delete, "#{config['target']}/api/common/nodes/node1")
-        node_stub = stub_request(:get, "#{config['target']}/api/common/nodes")
+        delete_stub = stub_request(:delete, "#{config['target']}/api/2.0/nodes/node1")
+        node_stub = stub_request(:get, "#{config['target']}/api/2.0/nodes")
                            .to_return(body: nodes_response_body)
 
         subject.delete(config, 'fakenodealias')
@@ -101,7 +114,7 @@ describe RackHD::API do
 
     describe '.set_status' do
       it 'sets the provided status' do
-        stub = stub_request(:patch, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub = stub_request(:patch, "#{config['target']}/api/2.0/nodes/#{node_id}")
                  .with(body: {status: status}.to_json, headers: {'Content-Type' => 'application/json'})
 
         subject.set_status(config, node_id, status)
@@ -112,7 +125,7 @@ describe RackHD::API do
     describe '.get_node' do
       it 'get the node information' do
         node_response = File.read('fixtures/node.json')
-        stub = stub_request(:get, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub = stub_request(:get, "#{config['target']}/api/2.0/nodes/#{node_id}")
                   .to_return(body: node_response)
         subject.get_node(config, node_id)
         expect(stub).to have_been_requested
@@ -124,7 +137,7 @@ describe RackHD::API do
         it 'get nodes and would not make patch request' do
           nodes_response_body = File.read('fixtures/nodes.json')
 
-          stub = stub_request(:get, "#{config['target']}/api/common/nodes")
+          stub = stub_request(:get, "#{config['target']}/api/2.0/nodes")
             .to_return(body: nodes_response_body)
 
           subject.free_nodes(config)
@@ -136,9 +149,9 @@ describe RackHD::API do
         it 'get nodes and will make a patch request' do
           nodes_response_body = File.read('fixtures/nodes_not_all_available.json')
 
-          stub_get = stub_request(:get, "#{config['target']}/api/common/nodes")
+          stub_get = stub_request(:get, "#{config['target']}/api/2.0/nodes")
                    .to_return(body: nodes_response_body)
-          stub_node1 = stub_request(:patch, "#{config['target']}/api/common/nodes/node1")
+          stub_node1 = stub_request(:patch, "#{config['target']}/api/2.0/nodes/node1")
                    .with(body: {status: status}.to_json,
                          headers: {'Content-Type' => 'application/json'})
 
@@ -171,10 +184,10 @@ describe RackHD::API do
     describe '.detach_disk' do
       it 'detaches the disk' do
         node_response = File.read('fixtures/node.json')
-        stub_request(:get, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub_request(:get, "#{config['target']}/api/2.0/nodes/#{node_id}")
           .to_return(body: node_response)
 
-        stub = stub_request(:patch, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub = stub_request(:patch, "#{config['target']}/api/2.0/nodes/#{node_id}")
                  .with(body: {persistent_disk: {disk_cid:'node_id-uuid',location:'/dev/sdb',attached:false}}.to_json,
                        headers: {'Content-Type' => 'application/json'})
 
@@ -186,9 +199,9 @@ describe RackHD::API do
     describe '.set_amt' do
       it 'configures a node to use the amt obm service' do
         host = 'my_host'
-        stub_request(:get, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub_request(:get, "#{config['target']}/api/2.0/nodes/#{node_id}")
           .to_return(body: {name: host}.to_json)
-        stub = stub_request(:patch, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub = stub_request(:patch, "#{config['target']}/api/2.0/nodes/#{node_id}")
                  .with(body: "{\"obmSettings\":[{\"service\":\"amt-obm-service\",\"config\":{\"user\":\"root\",\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
 
         subject.set_amt(config, node_id)
@@ -199,9 +212,9 @@ describe RackHD::API do
     describe '.set_ipmi' do
       it 'configures a node to use the amt obm service' do
         host = 'my_host'
-        stub_request(:get, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub_request(:get, "#{config['target']}/api/2.0/nodes/#{node_id}")
           .to_return(body: {name: host}.to_json)
-        stub = stub_request(:patch, "#{config['target']}/api/common/nodes/#{node_id}")
+        stub = stub_request(:patch, "#{config['target']}/api/2.0/nodes/#{node_id}")
                  .with(body: "{\"obmSettings\":[{\"service\":\"ipmi-obm-service\",\"config\":{\"user\":\"root\",\"host\":\"#{host}\",\"password\":\"#{config["password"]}\"}}]}")
 
         subject.set_ipmi(config, node_id)
@@ -212,10 +225,10 @@ describe RackHD::API do
     describe '.delete_orphan_disks' do
       it 'remove disk setting from node without cid' do
         nodes_response = File.read('fixtures/nodes.json')
-        stub_request(:get, "#{config['target']}/api/common/nodes")
+        stub_request(:get, "#{config['target']}/api/2.0/nodes")
           .to_return(body: nodes_response)
 
-        stub = stub_request(:patch, "#{config['target']}/api/common/nodes/node3")
+        stub = stub_request(:patch, "#{config['target']}/api/2.0/nodes/node3")
                  .with(body: "{\"persistent_disk\":{}}")
 
         subject.delete_orphan_disks(config)
@@ -225,13 +238,14 @@ describe RackHD::API do
 
     describe '.get_active_workflow' do
       it 'gets the active workflow of a node' do
-        workflow_name = 'Graph.Fake.Workflow.12345'
+        workflow_json = File.read('fixtures/workflow.json')
 
-        stub_request(:get, "#{config['target']}/api/common/nodes/node_id/workflows/active")
-          .to_return(body: {definition: {injectableName: workflow_name}}.to_json)
+        stub_request(:get, "#{config['target']}/api/2.0/nodes/node_id/workflows?active=true")
+          .to_return(body: workflow_json)
 
-        active_workflow = subject.get_active_workflow(config, node_id)
-        expect(active_workflow).to eq(workflow_name)
+        active_workflow_name = subject.get_active_workflow(config, node_id)
+        expected_active_workflows = ["W1", "W2"]
+        expect(active_workflow_name).to eq(expected_active_workflows)
       end
     end
 
@@ -244,7 +258,7 @@ describe RackHD::API do
 
         expected_body = {name: workflow, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
 
-        stub = stub_request(:post, "#{config['target']}/api/common/nodes/#{node_id}/workflows")
+        stub = stub_request(:post, "#{config['target']}/api/2.0/nodes/#{node_id}/workflows")
                  .with(body: expected_body).to_return(status: 201)
 
         subject.deprovision_node(config, node_id)
@@ -258,7 +272,7 @@ describe RackHD::API do
 
         nodes_response_body = File.read('fixtures/two_nodes.json')
 
-        node_stub = stub_request(:get, "#{config['target']}/api/common/nodes")
+        node_stub = stub_request(:get, "#{config['target']}/api/2.0/nodes")
           .to_return(body: nodes_response_body)
 
         stub_request(:get, "#{config['target']}/api/common/workflows/library")
@@ -266,9 +280,9 @@ describe RackHD::API do
 
         expected_body = {name: workflow, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
 
-        stub1 = stub_request(:post, "#{config['target']}/api/common/nodes/node1/workflows")
+        stub1 = stub_request(:post, "#{config['target']}/api/2.0/nodes/node1/workflows")
                  .with(body: expected_body).to_return(status: 201)
-        stub2 = stub_request(:post, "#{config['target']}/api/common/nodes/node2/workflows")
+        stub2 = stub_request(:post, "#{config['target']}/api/2.0/nodes/node2/workflows")
                  .with(body: expected_body).to_return(status: 201)
 
         subject.deprovision_all_nodes(config)
@@ -289,10 +303,10 @@ describe RackHD::API do
 
         nodes_response_body = File.read('fixtures/nodes.json')
 
-        node_stub = stub_request(:get, "#{config['target']}/api/common/nodes")
+        node_stub = stub_request(:get, "#{config['target']}/api/2.0/nodes")
           .to_return(body: nodes_response_body)
 
-        stub = stub_request(:post, "#{config['target']}/api/common/nodes/node1/workflows")
+        stub = stub_request(:post, "#{config['target']}/api/2.0/nodes/node1/workflows")
                  .with(body: expected_body).to_return(status: 201)
 
         subject.deprovision_node(config, "fakenodealias")
@@ -307,7 +321,7 @@ describe RackHD::API do
 
         expectedBody = {name: workflow, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
 
-        stub = stub_request(:post, "#{config['target']}/api/common/nodes/#{node_id}/workflows")
+        stub = stub_request(:post, "#{config['target']}/api/2.0/nodes/#{node_id}/workflows")
                  .with(body: expectedBody).to_return(status: 201)
 
         subject.restart_node(config, node_id)

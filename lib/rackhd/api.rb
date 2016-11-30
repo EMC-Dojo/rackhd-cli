@@ -26,13 +26,13 @@ module RackHD
       raise 'Please specify a target.' unless config['target']
 
       http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Get.new('/api/common/nodes')
+      request = Net::HTTP::Get.new('/api/2.0/nodes')
       nodes = JSON.parse(http.request(request).body)
 
       nodes.each do |node|
         if node['status'] != 'available'
             node_id = node['id']
-            request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
+            request = Net::HTTP::Patch.new("/api/2.0/nodes/#{node_id}")
             request.body = {status: 'available'}.to_json
             request.set_content_type('application/json')
             http.request(request)
@@ -45,14 +45,23 @@ module RackHD
 
       http = Net::HTTP.new(config['target'], config['port'])
 
-      request = Net::HTTP::Get.new('/api/common/nodes')
+      request = Net::HTTP::Get.new('/api/2.0/nodes')
+      JSON.parse(http.request(request).body)
+    end
+
+    def self.get_node_tags(config, node_id)
+      raise 'Please specify a target.' unless config['target']
+
+      http = Net::HTTP.new(config['target'], config['port'])
+
+      request = Net::HTTP::Get.new("/api/2.0/nodes/#{node_id}/tags")
       JSON.parse(http.request(request).body)
     end
 
     def self.get_node(config, node_id)
       raise 'Please specify a target.' unless config['target']
       http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}")
+      request = Net::HTTP::Get.new("/api/2.0/nodes/#{node_id}")
       JSON.parse(http.request(request).body)
     end
 
@@ -69,7 +78,7 @@ module RackHD
             nodes.each do |node|
               if node['name'] == found_mac
                 http = Net::HTTP.new(config['target'], config['port'])
-                request = Net::HTTP::Delete.new("/api/common/nodes/#{node['id']}")
+                request = Net::HTTP::Delete.new("/api/2.0/nodes/#{node['id']}")
                 http.request(request)
                 puts 'Deleted friendly ' + node['id']
                 return
@@ -80,7 +89,7 @@ module RackHD
       end
 
       http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Delete.new("/api/common/nodes/#{node_id}")
+      request = Net::HTTP::Delete.new("/api/2.0/nodes/#{node_id}")
       http.request(request)
     end
 
@@ -88,7 +97,7 @@ module RackHD
       raise 'Please specify a target.' unless config['target']
 
       http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
+      request = Net::HTTP::Patch.new("/api/2.0/nodes/#{node_id}")
       request.body = {status: status}.to_json
       request.set_content_type('application/json')
       http.request(request)
@@ -109,7 +118,7 @@ module RackHD
       nodes.each do |node|
         if node['cid'] == nil || node['cid'] == ''
           if node['persistent_disk'] != nil && node['persistent_disk']['disk_cid'] != nil
-            request = Net::HTTP::Patch.new("/api/common/nodes/#{node['id']}")
+            request = Net::HTTP::Patch.new("/api/2.0/nodes/#{node['id']}")
             request.body = {
               persistent_disk: {}
             }.to_json
@@ -124,14 +133,19 @@ module RackHD
       raise 'Please specify a target.' unless config['target']
 
       http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}/workflows/active")
+      request = Net::HTTP::Get.new("/api/2.0/nodes/#{node_id}/workflows?active=true")
       response = http.request(request)
-
+      result = []
       case response
         when Net::HTTPNoContent
           'n/a'
         when Net::HTTPOK
-          JSON.parse(response.body)['definition']['injectableName']
+          workflows = JSON.parse(response.body)
+          workflows.each do |w|
+            result.push(w['definition']['injectableName'])
+          end
+
+          result
         else
           'n/a'
       end
@@ -155,7 +169,7 @@ module RackHD
 
       http = Net::HTTP.new(config['target'], config['port'])
 
-      request = Net::HTTP::Post.new("/api/common/nodes/#{node_id}/workflows")
+      request = Net::HTTP::Post.new("/api/2.0/nodes/#{node_id}/workflows")
       request.body = {name: 'Graph.Reboot.Node', options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
       request.set_content_type('application/json')
 
@@ -195,7 +209,7 @@ module RackHD
           workflows = JSON.parse(http.request(request).body)
           workflows.each do |workflow|
             if workflow['injectableName'].include? 'DeprovisionNode'
-              request = Net::HTTP::Post.new("/api/common/nodes/#{node_id}/workflows")
+              request = Net::HTTP::Post.new("/api/2.0/nodes/#{node_id}/workflows")
               request.body = {name: workflow['injectableName'], options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
               request.set_content_type('application/json')
 
@@ -228,7 +242,7 @@ module RackHD
               nodes=get_nodes(config)
               nodes.each do |node|
                 node_id=node['id']
-                request = Net::HTTP::Post.new("/api/common/nodes/#{node_id}/workflows")
+                request = Net::HTTP::Post.new("/api/2.0/nodes/#{node_id}/workflows")
                 request.body = {name: workflow['injectableName'], options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
                 request.set_content_type('application/json')
 
@@ -272,12 +286,12 @@ module RackHD
       raise 'Please specify a target.' unless config['target']
 
       http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}")
+      request = Net::HTTP::Get.new("/api/2.0/nodes/#{node_id}")
       response = http.request(request)
       persistent_disk = JSON.parse(response.body)['persistent_disk']
       persistent_disk['attached'] = false
 
-      request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
+      request = Net::HTTP::Patch.new("/api/2.0/nodes/#{node_id}")
       request.body = {persistent_disk: persistent_disk}.to_json
       request.set_content_type('application/json')
       http.request(request)
@@ -315,11 +329,11 @@ module RackHD
       raise 'Please specify a password.' unless config['password']
 
       http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Get.new("/api/common/nodes/#{node_id}")
+      request = Net::HTTP::Get.new("/api/2.0/nodes/#{node_id}")
       response = http.request(request)
 
       host = JSON.parse(response.body)['name']
-      request = Net::HTTP::Patch.new("/api/common/nodes/#{node_id}")
+      request = Net::HTTP::Patch.new("/api/2.0/nodes/#{node_id}")
       request.body = {
         obmSettings: [{
             service: "#{name}-obm-service",

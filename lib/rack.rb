@@ -3,6 +3,7 @@ require 'thor'
 require 'yaml'
 
 require 'rackhd/api'
+require 'rackhd/json_helpers'
 require 'rackhd/config'
 
 class RackHDCLI < Thor
@@ -42,34 +43,7 @@ class RackHDCLI < Thor
     puts "Nodes on target #{config['target']}:\n\n"
     nodes = RackHD::API.get_nodes(config)
 
-    if config['with_ips']
-      node_ips = RackHD::API.get_nodes_ips_from_server(config)
-    end
-    node_names = config['node_names']
-
-    nodes.each do |node|
-      mac_addr = node['name']
-      if config['with_ips']
-        node['ip'] = node_ips[mac_addr]
-      end
-      node['name'] = node_names && node_names[mac_addr] ? "#{node_names[mac_addr]}" : "#{mac_addr}"
-      node['obm'] = node['obmSettings'].first['service'].split('-').first
-      node['cid'] = 'n/a' unless node['cid']
-      node['status'] = 'n/a' unless node['status']
-      if node['persistent_disk'] && node['persistent_disk']['disk_cid']
-        node['disk cid'] = node['persistent_disk']['disk_cid']
-      else
-        node['disk cid'] = 'n/a'
-      end
-
-      node['active workflow'] = RackHD::API.get_active_workflow(config, node['id'])
-    end
-
-    if config['with_ips']
-      tp nodes, 'id', 'name', 'obm', 'cid', 'status', 'disk cid', 'active workflow', 'ip'
-    else
-      tp nodes, 'id', 'name', 'obm', 'cid', 'status', 'disk cid', 'active workflow'
-    end
+    RackHD::JsonHelper.get_nodes_table(config, nodes)
   end
 
   desc 'node NODE', 'Get node information'
