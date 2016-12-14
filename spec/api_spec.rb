@@ -352,12 +352,12 @@ describe RackHD::API do
 
         resp2 = [].to_json
 
-        stub_request(:get, "#{config['target']}/api/common/files/list/all")
+        stub_request(:get, "#{config['target']}/api/2.0/files")
           .to_return({ body: resp1 }, { body: resp2 })
 
-        stub1 = stub_request(:delete, "#{config['target']}/api/common/files/78e53b30-98dc-4daf-89fb-fe34e1d10cb7")
+        stub1 = stub_request(:delete, "#{config['target']}/api/2.0/files/78e53b30-98dc-4daf-89fb-fe34e1d10cb7")
                  .to_return(status: 204)
-        stub2 = stub_request(:delete, "#{config['target']}/api/common/files/8d8792d5-e1ab-419d-9aff-c49c2a29624a")
+        stub2 = stub_request(:delete, "#{config['target']}/api/2.0/files/8d8792d5-e1ab-419d-9aff-c49c2a29624a")
                  .to_return(status: 204)
 
         deleted_files = subject.clean_files(config)

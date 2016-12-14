@@ -262,17 +262,17 @@ module RackHD
       raise 'Please specify a target.' unless config['target']
 
       http = Net::HTTP.new(config['target'], config['port'])
-      request = Net::HTTP::Get.new('/api/common/files/list/all')
+      request = Net::HTTP::Get.new('/api/2.0/files')
       response = http.request(request)
 
       files = JSON.parse(response.body)
       files.each do |file|
-        request = Net::HTTP::Delete.new("/api/common/files/#{file['uuid']}")
+        request = Net::HTTP::Delete.new("/api/2.0/files/#{file['uuid']}")
         response = http.request(request)
         raise("Error deleting file: #{file['uuid']}") unless response.kind_of? Net::HTTPNoContent
       end
 
-      request = Net::HTTP::Get.new('/api/common/files/list/all')
+      request = Net::HTTP::Get.new('/api/2.0/files')
       response = http.request(request)
 
       if JSON.parse(response.body).length != 0
