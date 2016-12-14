@@ -319,7 +319,7 @@ describe RackHD::API do
       it 'posts a reboot workflow to the specified node' do
         workflow = 'Graph.Reboot.Node'
 
-        expectedBody = {name: workflow, options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+        expectedBody = {name: workflow}.to_json
 
         stub = stub_request(:post, "#{config['target']}/api/2.0/nodes/#{node_id}/workflows")
                  .with(body: expectedBody).to_return(status: 201)

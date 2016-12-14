@@ -170,7 +170,7 @@ module RackHD
       http = Net::HTTP.new(config['target'], config['port'])
 
       request = Net::HTTP::Post.new("/api/2.0/nodes/#{node_id}/workflows")
-      request.body = {name: 'Graph.Reboot.Node', options: {defaults: {obmServiceName: 'amt-obm-service'}}}.to_json
+      request.body = {name: 'Graph.Reboot.Node'}.to_json
       request.set_content_type('application/json')
 
       resp = http.request(request)
