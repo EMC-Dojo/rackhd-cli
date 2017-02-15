@@ -93,6 +93,16 @@ class RackHDCLI < Thor
     puts 'done'
   end
 
+  desc 'clean-tags NODE', 'Clean tags on node'
+  def clean_tags(node)
+    config = RackHD::Config.load_config(options)
+    node_id = resolve_node_name(config, node)
+    print "Cleaning tags on node #{node_id}..."
+    RackHD::API.clean_tags(config, node_id)
+    puts 'done'
+  end
+
+
   desc 'detach-disk NODE', 'Detach disk on NODE'
   def detach_disk(node)
     config = RackHD::Config.load_config(options)

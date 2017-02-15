@@ -30,13 +30,7 @@ module RackHD
       nodes = JSON.parse(http.request(request).body)
 
       nodes.each do |node|
-        if node['status'] != 'available'
-            node_id = node['id']
-            request = Net::HTTP::Patch.new("/api/2.0/nodes/#{node_id}")
-            request.body = {status: 'available'}.to_json
-            request.set_content_type('application/json')
-            http.request(request)
-        end
+        self.clean_tags(config, node['id'])
       end
     end
 
@@ -56,6 +50,21 @@ module RackHD
 
       request = Net::HTTP::Get.new("/api/2.0/nodes/#{node_id}/tags")
       JSON.parse(http.request(request).body)
+    end
+
+    def self.clean_tags(config, node_id)
+      raise 'Please specify a target.' unless config['target']
+
+      http = Net::HTTP.new(config['target'], config['port'])
+
+      tags = get_node_tags(config, node_id)
+      tags.each do |tag|
+        request = Net::HTTP::Delete.new("/api/2.0/nodes/#{node_id}/tags/#{tag}")
+        resp = http.request(request)
+        if resp.code != "204"
+          raise "Error deleting tag #{tag} for #{node_id}"
+        end
+      end
     end
 
     def self.get_node(config, node_id)
