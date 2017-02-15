@@ -342,19 +342,20 @@ module RackHD
       response = http.request(request)
 
       host = JSON.parse(response.body)['name']
-      request = Net::HTTP::Patch.new("/api/2.0/nodes/#{node_id}")
+      request = Net::HTTP::Put.new("/api/2.0/nodes/#{node_id}/obm")
       request.body = {
-        obmSettings: [{
-            service: "#{name}-obm-service",
-            config: {
-              user: config['obm_user'],
-              host: host,
-              password: config['password']
-            }
-          }]
+          service: "#{name}-obm-service",
+          config: {
+            user: config['obm_user'],
+            host: host,
+            password: config['password']
+          }
       }.to_json
       request.set_content_type('application/json')
-      http.request(request)
+      resp = http.request(request)
+      if resp.code != '201'
+        raise "Error setting obm #{resp.body}"
+      end
     end
   end
 end

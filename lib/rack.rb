@@ -127,7 +127,7 @@ class RackHDCLI < Thor
   def ipmi(node)
     config = RackHD::Config.load_config(options)
     node_id = resolve_node_name(config, node)
-    print "Configuring AMT for node #{node_id}..."
+    print "Configuring IPMI for node #{node_id}..."
     RackHD::API.set_ipmi(config, node_id)
     puts 'done'
   end
