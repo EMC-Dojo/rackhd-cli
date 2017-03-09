@@ -46,6 +46,24 @@ class RackHDCLI < Thor
     RackHD::JsonHelper.get_nodes_table(config, nodes)
   end
 
+  desc 'lookups', 'Print a table with information about node lookups'
+  def lookups
+    config = RackHD::Config.load_config(options)
+    puts "Nodes on target #{config['target']}:\n\n"
+    nodes = RackHD::API.lookups(config)
+
+    RackHD::JsonHelper.get_lookups_table(config, nodes)
+  end
+
+  desc 'obms MODE NODEID MACADDR', 'Print a table with information about node lookups'
+  def obms(mode, node_id, mac_addr)
+    config = RackHD::Config.load_config(options)
+    puts "Nodes on target #{config['target']}:\n\n"
+    print "Setting obms to #{mode}..."
+    RackHD::API.set_obms(config, mode, node_id, mac_addr)
+    print 'Done'
+  end
+
   desc 'node NODE', 'Get node information'
   def node(node)
     config = RackHD::Config.load_config(options)

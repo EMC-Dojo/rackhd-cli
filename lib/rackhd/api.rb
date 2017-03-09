@@ -43,6 +43,15 @@ module RackHD
       JSON.parse(http.request(request).body)
     end
 
+    def self.lookups(config)
+      raise 'Please specify a target.' unless config['target']
+
+      http = Net::HTTP.new(config['target'], config['port'])
+
+      request = Net::HTTP::Get.new('/api/2.0/lookups')
+      JSON.parse(http.request(request).body)
+    end
+
     def self.get_node_tags(config, node_id)
       raise 'Please specify a target.' unless config['target']
 
@@ -350,6 +359,27 @@ module RackHD
             host: host,
             password: config['password']
           }
+      }.to_json
+      request.set_content_type('application/json')
+      resp = http.request(request)
+      if resp.code != '201'
+        raise "Error setting obm #{resp.body}"
+      end
+    end
+
+    def self.set_obms(config, obm_mode, node_id, macAddr)
+      raise 'Please specify a target.' unless config['target']
+      raise 'Please specify a password.' unless config['password']
+      http = Net::HTTP.new(config['target'], config['port'])
+      request = Net::HTTP::Put.new("/api/2.0/obms")
+      request.body = {
+          service: "#{obm_mode}-obm-service",
+          config: {
+            user: config['obm_user'],
+            host: macAddr,
+            password: config['password']
+          },
+          nodeId: node_id
       }.to_json
       request.set_content_type('application/json')
       resp = http.request(request)

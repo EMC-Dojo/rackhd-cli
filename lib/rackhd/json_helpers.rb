@@ -16,6 +16,10 @@ module RackHD
       tp nodes, 'id', 'name', 'tags', 'obm', 'active workflow'
     end
 
+    def self.get_lookups_table(config, nodes)
+      tp nodes, 'node', 'macAddress', 'ipAddress'
+    end
+
     private
     def self.get_status_and_cid(tags)
       if tags.size == 2
